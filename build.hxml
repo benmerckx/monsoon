@@ -1,0 +1,8 @@
+-cp src
+-lib tink_tcp
+-lib tink_runloop
+-lib tink_http
+-lib tink_concurrent
+-D concurrent
+-main Main
+-neko app.n
