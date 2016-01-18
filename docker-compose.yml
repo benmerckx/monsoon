@@ -3,6 +3,6 @@ main:
   volumes:
    - .:/app
   working_dir: /app
-  command: haxe --run Forever neko app.n
+  command: haxe --run Forever neko index.n
   ports:
-   - "80" 
+   - "80"

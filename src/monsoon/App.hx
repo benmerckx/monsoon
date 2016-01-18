@@ -4,7 +4,6 @@ import tink.http.Container;
 import tink.http.Request;
 import tink.http.Response;
 import tink.core.Future;
-import tink.concurrent.Thread;
 import sys.FileSystem;
 import monsoon.Request;
 import monsoon.Response;
@@ -81,8 +80,10 @@ class App {
 			throw e;
 		}
 		
+		#if !php
 		if (options.watch != null && options.watch) {
-			new Thread(function () {
+			
+			new tink.concurrent.Thread(function () {
 				var file = neko.vm.Module.local().name;
 				
 				function stamp() return 
@@ -100,6 +101,7 @@ class App {
 				}
 			});
 		}
+		#end
 		
 		return this;
 	}

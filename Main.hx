@@ -9,6 +9,9 @@ class Main {
 		app.route('/test', function(request, response) {
 			response.end("test");
 		});
+		app.route('/app.n', function(request, response) {
+			response.end("cgi test");
+		});
 		app.route('/test/:extra', function(request: Request<{extra: String}>, response) {
 			response.end(request.params.extra);
 		});

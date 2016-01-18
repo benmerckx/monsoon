@@ -5,4 +5,4 @@
 -lib tink_concurrent
 -D concurrent
 -main Main
--neko app.n
+-neko index.n

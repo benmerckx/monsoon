@@ -13,7 +13,6 @@ class RequestBuilder {
 
 	static public function buildGeneric() {
 		var state = (macro: {});
-		var children = (macro: Dynamic);
 		switch (Context.getLocalType()) {
 			case TInst(cl, paramList):
 				params = paramList;
