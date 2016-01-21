@@ -4,10 +4,7 @@ using Monsoon;
 class Main {
 	public static function main() {		
 		var router = new Router<Path>(new PathMatcher());
-		router.route('/', function(request, response) {
-			response.end('index');
-		});
-		router.route('/test', function(request, response) {
+		router.route('/test', function(request: Request, response) {
 			response.end("test");
 		});
 		router.route('/app.n', function(request, response) {

@@ -14,9 +14,8 @@ class MonsoonRequest<T> {
 		this.request = request;
 	
 	@:allow(monsoon.App)
-	public function setParams(params: T)
+	function setParams(params: T)
 		this.params = params;
-	
 }
 
 @:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())

@@ -39,13 +39,14 @@ class App {
 	function serve(incoming: IncomingRequest) {
 		var request = new Request(incoming);
 		for (router in routers) {
-			var match = router.findRoute(request);
-			if (match != null) {
-				var route = match.a;
-				request.setParams(match.b);
-				var response = new Response();
-				route.callback(request, response);
-				return response.done.asFuture();
+			switch(router.findRoute(request)) {
+				case Success(match):
+					var route = match.a;
+					request.setParams(match.b);
+					var response = new Response();
+					route.callback(request, response);
+					return response.done.asFuture();
+				default:
 			}
 		}
 		return Future.sync(('404': OutgoingResponse)); 
@@ -108,5 +109,4 @@ class App {
 		
 		return this;
 	}
-	
 }
