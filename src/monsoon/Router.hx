@@ -1,51 +1,42 @@
 package monsoon;
 
-import monsoon.Router.Params;
-import monsoon.Router.Route;
 import haxe.DynamicAccess;
 
 using tink.CoreApi;
 using StringTools;
 using Lambda;
 
-typedef Params = Null<Map<String, String>>;
-
-typedef Route = {
-	path: String,
+typedef Route<P> = {
+	path: P,
 	callback: Request -> Response -> Void
-}
-
-typedef RouteMatch = {
-	route: Route,
-	params: Params
 }
 
 typedef MatcherI = {
 	public function new(): Void;
 }
 
-class Router {
+class Router<P> {
 	
-	var routes: List<Route> = new List();
-	var matcher: PathMatcher;
-
-	public function new() {
-		matcher = new PathMatcher();
+	var routes: List<Route<P>> = new List();
+	var matcher: Matcher<P>;
+ 
+	public function new(?matcher: Matcher<P>) {
+		this.matcher = matcher;
 	}
 	
-	public function route<T>(path: String, callback: Request<T> -> Response -> Void) {
+	public function route<T>(path: P, callback: Request<T> -> Response -> Void) {
 		routes.add({path: path, callback: cast callback});
 		return this;
 	}
 	
-	public function findRoute(path: String): Pair<Route, Params> {
-		var found = null;
-		routes.map(function(route) {
-			var match = matcher.matchRoute(path, route);
-			if (match.a)
-				found = new Pair(route, match.b);
-		});
-		return found;
+	public function findRoute(request: Request): Pair<Route<P>, Dynamic> {
+		for (route in routes) {
+			switch (matcher.matchRoute(request, route.path)) {
+				case Success(params): return new Pair(route, params);
+				default:
+			}
+		}
+		return null;
 	}
 	
 }

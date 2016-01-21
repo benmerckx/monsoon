@@ -7,16 +7,15 @@ class MonsoonRequest<T> {
 	public var params(default, null): T;
 	var request: IncomingRequest;
 	
-	public function new(request: IncomingRequest, ?params: Map<String, String>) {
+	public var uri(get, never): String;
+	function get_uri(): String return request.header.uri;
+	
+	public function new(request: IncomingRequest)
 		this.request = request;
-		if (params != null) {
-			var paramObject = {};
-			for (param in params.keys()) {
-				Reflect.setField(paramObject, param, params.get(param));
-			}
-			this.params = cast paramObject;
-		}
-	}
+	
+	@:allow(monsoon.App)
+	public function setParams(params: T)
+		this.params = params;
 	
 }
 

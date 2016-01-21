@@ -7,6 +7,7 @@ import tink.core.Future;
 import sys.FileSystem;
 import monsoon.Request;
 import monsoon.Response;
+using tink.CoreApi;
 
 enum ContainerMode {
 	Node;
@@ -21,7 +22,7 @@ typedef AppOptions = {
 
 class App {
 	var options: AppOptions;
-	var router: Router = new Router();
+	var routers: List<Router<Any>> = new List();
 
 	public function new(?options: AppOptions) {
 		#if js
@@ -34,22 +35,24 @@ class App {
 			throw "Set mode to continue";
 		this.options = options;
 	}
-	
-	public function route(path, callback)
-		return router.route(path, callback);
 		
 	function serve(incoming: IncomingRequest) {
-		var match = router.findRoute(incoming.header.uri);
-		if (match != null) {
-			var route = match.a, params = match.b;
-			var request = new Request(incoming, params);
-			var response = new Response();
-			route.callback(request, response);
-			return response.done.asFuture();
-		} else {
-			return Future.sync(('404': OutgoingResponse)); 
+		var request = new Request(incoming);
+		for (router in routers) {
+			var match = router.findRoute(request);
+			if (match != null) {
+				var route = match.a;
+				request.setParams(match.b);
+				var response = new Response();
+				route.callback(request, response);
+				return response.done.asFuture();
+			}
 		}
+		return Future.sync(('404': OutgoingResponse)); 
 	}
+	
+	public function use(router: Router<Dynamic>)
+		routers.add(router);
 	
 	public function listen(port: Int = 80) {
 		var container = switch (options.mode) {
