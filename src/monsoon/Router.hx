@@ -1,20 +1,14 @@
 package monsoon;
 
 import haxe.DynamicAccess;
-import monsoon.macro.RequestBuilder;
 import monsoon.PathMatcher;
 
 using tink.CoreApi;
-using StringTools;
-using Lambda;
 
 typedef Route<P> = {
 	path: P,
-	callback: Request -> Response -> Void
-}
-
-typedef MatcherI = {
-	public function new(): Void;
+	callback: Request<Dynamic> -> Response -> Void,
+	types: Array<ParamType>
 }
 
 class Router<P> {
@@ -26,13 +20,14 @@ class Router<P> {
 		this.matcher = matcher;
 	}
 	
-	public function addRoute<T>(path: P, callback: Request<T> -> Response -> Void) {
-		routes.add({path: path, callback: cast callback});
+	public function addRoute<T>(path: P, callback: Request<T> -> Response -> Void, types: Array<ParamType>) {
+		routes.add({path: path, callback: cast callback, types: types});
+		return this;
 	}
 	
-	public function findRoute(request: Request): Outcome<Pair<Route<P>, Dynamic>, Noise> {
+	public function findRoute(request: Request<Dynamic>): Outcome<Pair<Route<P>, Dynamic>, Noise> {
 		for (route in routes) 
-			switch (matcher.matchRoute(request, route.path)) {
+			switch (matcher.match(request, route.path, route.types)) {
 				case Success(params): return Success(new Pair(route, params));
 				default:
 			}

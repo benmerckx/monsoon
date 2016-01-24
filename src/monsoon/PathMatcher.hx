@@ -1,7 +1,6 @@
 package monsoon;
 
 import haxe.DynamicAccess;
-import monsoon.Router;
 
 using tink.CoreApi;
 using Lambda;
@@ -37,7 +36,7 @@ class PathMatcher implements Matcher<Path> {
 
 	public function new() {}
 	
-	public function matchRoute(request: Request, path: Path): Outcome<Dynamic, Noise> {
+	public function match(request: Request<Dynamic>, path: Path, types: Array<ParamType>): Outcome<Dynamic, Noise> {
 		var uri: Path = request.uri;
 		if (path == '*') 
 			return Success(null);
@@ -51,10 +50,19 @@ class PathMatcher implements Matcher<Path> {
 		if (pathSegments.length != uriSegments.length)
 			return Failure(Noise);
 		var i = 0;
-		var params: DynamicAccess<String> = {};
+		var params: DynamicAccess<Dynamic> = {};
 		for (segment in uriSegments) {
 			if (pathSegments[i].charAt(0) == Path.IDENTIFIER) {
-				params.set(pathSegments[i].substr(1), segment);
+				var name = pathSegments[i].substr(1), 
+					value = segment,
+					type = types.find(function(type) return type.name == name);
+				trace(type);
+				if (type != null) {
+					switch (filter(value, type.type)) {
+						case Success(v): params.set(name, v);
+						default: return Failure(Noise);
+					}
+				}
 				continue;
 			}
 			if (segment != pathSegments[i]) return Failure(Noise);
@@ -62,5 +70,17 @@ class PathMatcher implements Matcher<Path> {
 		}
 		return Success(params);
 	}
+	
+	function filter(value: String, type: String): Outcome<Dynamic, Noise>
+		return switch (type) {
+			case 'Int':
+				var nr = Std.parseInt(value);
+				if (nr == null) Failure(Noise);
+				else Success(nr);
+			case 'String':
+				Success(value);
+			default: 
+				Failure(Noise);
+		}
 	
 }

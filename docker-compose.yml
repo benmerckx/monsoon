@@ -6,3 +6,7 @@ main:
   command: haxe --run Forever neko index.n
   ports:
    - "80"
+  log_driver: "json-file"
+  log_opt:
+    max-size: "1k"
+    max-file: "20"

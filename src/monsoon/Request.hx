@@ -2,7 +2,7 @@ package monsoon;
 
 import tink.http.Request.IncomingRequest;
 
-class MonsoonRequest<T> {
+class Request<T> {
 	
 	public var params(default, null): T;
 	var request: IncomingRequest;
@@ -17,6 +17,3 @@ class MonsoonRequest<T> {
 	function setParams(params: T)
 		this.params = params;
 }
-
-@:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())
-class Request<Rest> {}

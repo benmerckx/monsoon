@@ -1,15 +1,12 @@
 package;
 
+
 typedef ContainerMode = monsoon.App.ContainerMode;
 typedef Response = monsoon.Response;
+//typedef Request<T> = monsoon.Request<T>;
 typedef App = monsoon.App;
 typedef Router<P> = monsoon.Router<P>;
+typedef RouteHelper = monsoon.macro.RouteHelper;
 
 @:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())
 class Request<Rest> {}
-
-class RouteHelper {
-	macro public static function route<A, B>(router: haxe.macro.Expr.ExprOf<Router<A>>, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
-		return macro return router.addRoute($path, $callback);
-	}
-}
