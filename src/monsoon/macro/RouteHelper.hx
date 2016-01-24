@@ -8,11 +8,24 @@ import haxe.macro.Type;
 
 #if !macro
 import monsoon.Router;
+import monsoon.App;
 #end
+
+class AppHelper {
+	macro public static function route<A, B>(app: haxe.macro.Expr.ExprOf<App>, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
+		return RouteHelper.addRoute(macro $app.router, path, callback);
+	}
+}
 
 class RouteHelper {
 	
 	macro public static function route<A, B>(router: haxe.macro.Expr.ExprOf<Router<A>>, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
+		return RouteHelper.addRoute(router, path, callback);
+	}
+	
+	#if macro
+	
+	public static function addRoute<A, B>(router: haxe.macro.Expr, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
 		Context.typeExpr(callback);
 		var state = RequestBuilder.state;
 		var params = [];
@@ -23,10 +36,8 @@ class RouteHelper {
 				// Move this to request builder for proper position
 				Context.error('Request type parameter must be TAnonymous', Context.currentPos());
 		}
-		return macro router.addRoute($path, $callback, $v{params});
+		return macro $router.addRoute($path, $callback, $v{params});
 	}
-	
-	#if macro
 	
 	static function fieldInfo(field: Field)
 		return {
@@ -53,4 +64,5 @@ class RouteHelper {
 		}
 	
 	#end
+	
 }

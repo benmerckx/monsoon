@@ -8,6 +8,7 @@ import haxe.macro.TypeTools;
 using Lambda;
 
 class RequestBuilder {
+	
 	@:allow(monsoon.macro.RouteHelper)
 	static var state: ComplexType;
 	
@@ -31,4 +32,5 @@ class RequestBuilder {
 			name: 'Request'
 		});
 	}
+	
 }

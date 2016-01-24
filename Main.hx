@@ -4,24 +4,27 @@ using Monsoon;
 
 class Main {
 	public static function main() {		
-		var router = new Router<Path>(new PathMatcher());
-		router.route('/', index);
-		router.route('/test', function(request: Request, response) {
-			response.end("test");
+		var app = new App({mode: ContainerMode.Tcp, watch: true});
+		
+		app.route('/', index);
+		app.route(Post('/post'), function(request: Request, response: Response) {
+			response.send("post");
 		});
-		router.route('/app.n', function(request: Request, response) {
-			response.end("cgi test");
+		app.route('/app.n', function(request: Request, response: Response) {
+			response.send("cgi test");
 		});
-		router.route('/test/:extra', function(request: Request<{extra: Int}>, response) {
-			response.end('Nr: '+request.params.extra);
+		app.route('/test/:extra', function(request: Request<{extra: Float}>, response: Response) {
+			response.cookie('test', 'hello');
+			response.json(request.params);
+		});
+		app.route('/test/:extra', function(request: Request<{extra: String}>, response: Response) {
+			response.send('String: '+request.params.extra);
 		});
 		
-		var app = new App({mode: ContainerMode.Tcp, watch: true});
-		app.use(router);
 		app.listen();
 	}
 	
-	static function index(request: Request<{test: String}>, response) {
-		response.end("index");
+	static function index(request: Request, response: Response) {
+		response.send("index");
 	}
 }

@@ -7,6 +7,7 @@ import tink.core.Future;
 import sys.FileSystem;
 import monsoon.Request;
 import monsoon.Response;
+import monsoon.PathMatcher;
 using tink.CoreApi;
 
 enum ContainerMode {
@@ -23,6 +24,8 @@ typedef AppOptions = {
 class App {
 	var options: AppOptions;
 	var routers: List<Router<Any>> = new List();
+	@:allow(monsoon.macro.RouteHelper.AppHelper)
+	var router: Router<Path>;
 
 	public function new(?options: AppOptions) {
 		#if js
@@ -34,6 +37,7 @@ class App {
 		if (options.mode == null)
 			throw "Set mode to continue";
 		this.options = options;
+		routers.add(cast router = new Router<Path>(new PathMatcher()));
 	}
 		
 	function serve(incoming: IncomingRequest) {
@@ -86,7 +90,6 @@ class App {
 		
 		#if !php
 		if (options.watch != null && options.watch) {
-			
 			new tink.concurrent.Thread(function () {
 				var file = neko.vm.Module.local().name;
 				

@@ -8,7 +8,10 @@ class Request<T> {
 	var request: IncomingRequest;
 	
 	public var uri(get, never): String;
-	function get_uri(): String return request.header.uri;
+	inline function get_uri(): String return request.header.uri;
+	
+	public var method(get, never): Method;
+	inline function get_method(): Method return (request.header.method: String).toLowerCase();
 	
 	public function new(request: IncomingRequest)
 		this.request = request;
