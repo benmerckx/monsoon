@@ -10,15 +10,8 @@ import monsoon.Response;
 import monsoon.PathMatcher;
 using tink.CoreApi;
 
-enum ContainerMode {
-	Node;
-	Cgi;
-	Tcp;
-}
-
 typedef AppOptions = {
-	?watch: Bool,
-	?mode: ContainerMode
+	?watch: Bool
 }
 
 class App {
@@ -28,14 +21,6 @@ class App {
 	var router: Router<Path>;
 
 	public function new(?options: AppOptions) {
-		#if js
-		options.mode = ContainerMode.Node;
-		#end
-		#if php
-		options.mode = ContainerMode.Cgi;
-		#end
-		if (options.mode == null)
-			throw "Set mode to continue";
 		this.options = options;
 		routers.add(cast router = new Router<Path>(new PathMatcher()));
 	}
@@ -60,21 +45,17 @@ class App {
 		routers.add(router);
 	
 	public function listen(port: Int = 80) {
-		var container = switch (options.mode) {
-			#if neko
-			case ContainerMode.Tcp:
-				new TcpContainer(port);
+		var container =
+			#if (neko && embed)
+				new TcpContainer(port)
+			#elseif  ((!embed && neko) || php)
+				CgiContainer.instance
+			#elseif js
+				new NodeContainer(port)
+			#else
+				null
 			#end
-			#if (neko || php)
-			case ContainerMode.Cgi:
-				CgiContainer.instance;
-			#end
-			#if js
-			case ContainerMode.Node:
-				new NodeContainer(port);
-			#end
-			default: throw "Mode not supported";
-		}
+		;
 		
 		try {
 			container.run({

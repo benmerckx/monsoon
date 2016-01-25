@@ -4,7 +4,7 @@ using Monsoon;
 
 class Main {
 	public static function main() {		
-		var app = new App({mode: ContainerMode.Tcp, watch: true});
+		var app = new App({watch: true});
 		
 		app.route('/', index);
 		app.route(Post('/post'), function(request: Request, response: Response) {
