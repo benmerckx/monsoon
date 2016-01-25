@@ -46,7 +46,7 @@ class App {
 			switch(router.findRoute(request)) {
 				case Success(match):
 					var route = match.a;
-					request.setParams(match.b);
+					request.params = match.b;
 					var response = new Response();
 					route.callback(request, response);
 					return response.done.asFuture();

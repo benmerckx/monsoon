@@ -14,7 +14,7 @@ class Main {
 			response.send("cgi test");
 		});
 		app.route('/test/:extra', function(request: Request<{extra: Float}>, response: Response) {
-			response.cookie('test', 'hello');
+			response.cookie('test', 'hello', {path: '/test'});
 			response.json(request.params);
 		});
 		app.route('/test/:extra', function(request: Request<{extra: String}>, response: Response) {

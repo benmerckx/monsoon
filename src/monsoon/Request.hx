@@ -4,6 +4,7 @@ import tink.http.Request.IncomingRequest;
 
 class Request<T> {
 	
+	@:allow(monsoon.App)
 	public var params(default, null): T;
 	var request: IncomingRequest;
 	
@@ -15,8 +16,5 @@ class Request<T> {
 	
 	public function new(request: IncomingRequest)
 		this.request = request;
-	
-	@:allow(monsoon.App)
-	function setParams(params: T)
-		this.params = params;
+		
 }

@@ -32,23 +32,20 @@ class Response {
 	}
 	
 	public function cookie(name: String, value: String, ?options: CookieOptions) {
-		function addPair(buf:StringBuf, name, value) {
-			if(value == null) return;
-			buf.add("; ");
-			buf.add(name);
-			buf.add(value);
-		}
-		var buf = new StringBuf();
-		buf.add(name+'='+StringTools.urlEncode(value));
+		var buffer = StringTools.urlEncode(name)+'='+StringTools.urlEncode(value);
 		if (options != null) {
 			if (options.expires != null) 
-				addPair(buf, "expires=", DateTools.format(options.expires, "%a, %d-%b-%Y %H:%M:%S GMT"));
-			addPair(buf, "domain=", options.domain);
-			addPair(buf, "path=", options.path);
-			if (options.secure) addPair(buf, "secure", "");
-			if (options.httpOnly) addPair(buf, "HttpOnly", "");
+				buffer += "; expires="+DateTools.format(options.expires, "%a, %d-%b-%Y %H:%M:%S GMT");
+			if (options.domain != null) 
+				buffer += "; domain="+options.domain;
+			if (options.path != null) 
+				buffer += "; path="+options.path;
+			if (options.secure != null && options.secure) 
+				buffer += "; secure";
+			if (options.httpOnly != null && options.httpOnly)
+				buffer += "; HttpOnly";
 		}
-		headers.set('Set-Cookie', buf.toString());
+		headers.set('Set-Cookie', buffer);
 	}
 		
 	public function send(output: IdealSource) 
