@@ -28,12 +28,11 @@ abstract Path(PathAbstr) {
 	
 	@:from
 	static public function fromString(s:String) 
-	return (MethodPath.All(s): Path);
+		return (MethodPath.All(s): Path);
 		
 	@:from
-	static public function fromMethod(method: MethodPath) {
+	static public function fromMethod(method: MethodPath)
 		return new Path(method.getParameters()[0], method.getName().toLowerCase());
-	}
 		
 }
 
@@ -57,7 +56,7 @@ class PathMatcher implements Matcher<Path> {
 		if (input.method != 'all' && request.method != input.method) 
 			return Failure(Noise);
 		var path = format(input.path);
-		var uri = format(request.uri);
+		var uri = format(request.path);
 		if (path == '*') 
 			return Success(null);
 		if (path.indexOf(':') == -1) {

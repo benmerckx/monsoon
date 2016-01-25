@@ -10,7 +10,7 @@ using Lambda;
 class RequestBuilder {
 	
 	@:allow(monsoon.macro.RouteHelper)
-	static var state: ComplexType;
+	static var state: ComplexType = null;
 	
 	static public function buildGeneric() {
 		state = (macro: {});

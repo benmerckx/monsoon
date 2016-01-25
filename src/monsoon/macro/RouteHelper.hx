@@ -29,6 +29,8 @@ class RouteHelper {
 		Context.typeExpr(callback);
 		var state = RequestBuilder.state;
 		var params = [];
+		if (state == null) 
+			state = TAnonymous([]);
 		switch (state) {
 			case TAnonymous(fields):
 				params = fields.map(fieldInfo);
@@ -36,6 +38,7 @@ class RouteHelper {
 				// Move this to request builder for proper position
 				Context.error('Request type parameter must be TAnonymous', Context.currentPos());
 		}
+		RequestBuilder.state = null;
 		return macro $router.addRoute($path, $callback, $v{params});
 	}
 	

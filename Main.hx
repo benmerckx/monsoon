@@ -25,6 +25,6 @@ class Main {
 	}
 	
 	static function index(request: Request, response: Response) {
-		response.send("index");
+		response.send(request.method);
 	}
 }
