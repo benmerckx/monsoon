@@ -14,12 +14,10 @@ typedef Cookie = {
 
 typedef CookieOptions = {
 	?domain: String,
-	//?encode: T -> String,
 	?expires: Date,
 	?httpOnly: Bool,
 	?path: String,
 	?secure: Bool,
-	//?signed: Bool
 }
 
 class Response {

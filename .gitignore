@@ -1,2 +1,6 @@
 *.n
 bin
+Forever.hx
+Main.hx
+build.hxml
+docker-compose.hxml
