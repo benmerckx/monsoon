@@ -3,4 +3,4 @@ bin
 Forever.hx
 Main.hx
 build.hxml
-docker-compose.hxml
+docker-compose.yml
