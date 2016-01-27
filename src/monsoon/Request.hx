@@ -2,7 +2,7 @@ package monsoon;
 
 import tink.http.Request.IncomingRequest;
 
-class Request<T> {
+class RequestAbstr<T> {
 	
 	@:allow(monsoon.App)
 	public var params(default, null): T;
@@ -36,3 +36,6 @@ class Request<T> {
 		this.request = request;
 		
 }
+
+@:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())
+class Request<Rest> {}

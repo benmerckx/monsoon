@@ -26,7 +26,7 @@ class RequestBuilder {
 				Context.error("Type expected", Context.currentPos());
 		}
 		return ComplexType.TPath({
-			sub: null,
+			sub: 'RequestAbstr',
 			params: [TPType(state)],
 			pack: ['monsoon'],
 			name: 'Request'

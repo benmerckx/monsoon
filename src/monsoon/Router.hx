@@ -7,7 +7,7 @@ using tink.CoreApi;
 
 typedef Route<P> = {
 	path: P,
-	callback: Request<Dynamic> -> Response -> Void,
+	callback: Request -> Response -> Void,
 	types: Array<ParamType>
 }
 
@@ -25,7 +25,7 @@ class Router<P> {
 		return this;
 	}
 	
-	public function findRoute(request: Request<Dynamic>): Outcome<Pair<Route<P>, Dynamic>, Noise> {
+	public function findRoute(request: Request): Outcome<Pair<Route<P>, Any>, Noise> {
 		for (route in routes) 
 			switch (matcher.match(request, route.path, route.types)) {
 				case Success(params): return Success(new Pair(route, params));

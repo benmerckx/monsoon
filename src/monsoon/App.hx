@@ -40,8 +40,8 @@ class App {
 		return Future.sync(('404': OutgoingResponse)); 
 	}
 	
-	public function use(router: Router<Dynamic>)
-		routers.add(router);
+	public function use(router: Router<Any>)
+		routers.add(cast router);
 	
 	public function listen(port: Int = 80) {
 		var container =
