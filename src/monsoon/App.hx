@@ -17,8 +17,7 @@ typedef AppOptions = {
 class App {
 	var options: AppOptions;
 	var routers: List<Router<Any>> = new List();
-	@:allow(monsoon.macro.RouteHelper.AppHelper)
-	var router: Router<Path>;
+	public var router(default, null): Router<Path>;
 
 	public function new(?options: AppOptions) {
 		this.options = options;

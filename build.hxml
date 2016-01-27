@@ -7,3 +7,9 @@
 -D embed
 -main Main
 -neko index.n
+--next
+-cp src
+-lib tink_http
+-main Main
+-dce full
+-php bin/php/

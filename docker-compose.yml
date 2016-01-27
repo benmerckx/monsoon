@@ -10,3 +10,13 @@ main:
   log_opt:
     max-size: "1k"
     max-file: "20"
+php:
+  image: codeurs/apache-php
+  volumes:
+   - ./bin/php:/var/www/html
+  ports:
+   - "80"
+  log_driver: "json-file"
+  log_opt:
+    max-size: "1k"
+    max-file: "20"

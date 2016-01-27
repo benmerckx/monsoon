@@ -11,11 +11,14 @@ class Main {
 			response.send("post");
 		});
 		app.route('/app.n', function(request: Request, response: Response) {
+			response.cookie('hello', 'world');
 			response.send("cgi test");
 		});
 		app.route('/test/:extra', function(request: Request<{extra: Float}>, response: Response) {
-			response.cookie('test', 'hello', {path: '/test'});
-			response.json(request.params);
+			response
+			.cookie('test', 'hello', {path: '/test'})
+			.cookie('test2', 'hello', {path: '/test2'})
+			.json(request.params);
 		});
 		app.route('/test/:extra', function(request: Request<{extra: String}>, response: Response) {
 			response.send('String: '+request.params.extra);

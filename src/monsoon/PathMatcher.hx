@@ -75,7 +75,6 @@ class PathMatcher implements Matcher<Path> {
 				var name = pathSegments[i].substr(1), 
 					value = segment,
 					type = types.find(function(type) return type.name == name);
-				trace(type);
 				if (type != null) {
 					switch (filter(value, type.type)) {
 						case Success(v): params.set(name, v);
