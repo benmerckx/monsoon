@@ -14,7 +14,7 @@ typedef AppOptions = {
 	?watch: Bool
 }
 
-class App {
+class Monsoon {
 	var options: AppOptions;
 	var routers: List<Router<Any>> = new List();
 	public var router(default, null): Router<Path>;

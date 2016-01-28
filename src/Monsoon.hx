@@ -1,6 +1,6 @@
 
 typedef Response = monsoon.Response;
-typedef App = monsoon.App;
+typedef Monsoon = monsoon.Monsoon;
 typedef Router<P> = monsoon.Router<P>;
 typedef RouteHelper = monsoon.macro.RouteHelper;
 typedef AppHelper = monsoon.macro.RouteHelper.AppHelper;

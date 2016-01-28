@@ -4,7 +4,7 @@ import tink.http.Request.IncomingRequest;
 
 class RequestAbstr<T> {
 	
-	@:allow(monsoon.App)
+	@:allow(monsoon.Monsoon)
 	public var params(default, null): T;
 	var request: IncomingRequest;
 	

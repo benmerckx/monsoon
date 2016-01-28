@@ -8,11 +8,11 @@ import haxe.macro.Type;
 
 #if !macro
 import monsoon.Router;
-import monsoon.App;
+import monsoon.Monsoon;
 #end
 
 class AppHelper {
-	macro public static function route<A, B>(app: haxe.macro.Expr.ExprOf<App>, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
+	macro public static function route<A, B>(app: haxe.macro.Expr.ExprOf<Monsoon>, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
 		return RouteHelper.addRoute(macro $app.router, path, callback);
 	}
 }
