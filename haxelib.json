@@ -1,0 +1,13 @@
+{
+  "name": "monsoon",
+  "url" : "https://github.com/benmerckx/monsoon",
+  "license": "MIT",
+  "tags": ["js", "html", "web"],
+  "description": "Routing for tink_http.",
+  "version": "0.0.0",
+  "releasenote": "Alpha",
+  "contributors": ["benmerckx"],
+  "dependencies": {
+  	"tink_http": "",
+  }
+}
