@@ -25,19 +25,29 @@ class Monsoon {
 	}
 		
 	function serve(incoming: IncomingRequest) {
+		var trigger = Future.trigger();
+		next(incoming, 0, trigger);
+		return trigger.asFuture();
+	}
+	
+	function next(incoming: IncomingRequest, index: Int, trigger: FutureTrigger<OutgoingResponse>) {
 		var request = new Request(incoming);
 		for (router in routers) {
-			switch(router.findRoute(request)) {
+			switch router.findRoute(request, index) {
 				case Success(match):
 					var route = match.a;
 					request.params = match.b;
 					var response = new Response();
+					response.done = trigger;
 					route.callback(request, response);
-					return response.done.asFuture();
+					request.done.asFuture().handle(function(_) {
+						next(incoming, route.order, trigger);
+					});
+					return;
 				default:
 			}
 		}
-		return Future.sync(('404': OutgoingResponse)); 
+		trigger.trigger(('404': OutgoingResponse));
 	}
 	
 	public function use(router: Router<Any>)

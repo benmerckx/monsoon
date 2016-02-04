@@ -1,11 +1,13 @@
 package monsoon;
 
+import tink.core.Future;
 import tink.http.Request.IncomingRequest;
 
+@:allow(monsoon.Monsoon)
 class RequestAbstr<T> {
 	
-	@:allow(monsoon.Monsoon)
 	public var params(default, null): T;
+	var done(default, never) = Future.trigger();
 	var request: IncomingRequest;
 	
 	public var url(get, never): String;
@@ -34,7 +36,9 @@ class RequestAbstr<T> {
 	
 	public function new(request: IncomingRequest)
 		this.request = request;
-		
+	
+	public function pass()
+		done.trigger(null);
 }
 
 @:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())

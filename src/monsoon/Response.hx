@@ -22,7 +22,9 @@ typedef CookieOptions = {
 
 class Response {
 	
-	public var done(default, never) = Future.trigger();
+	@:allow(monsoon.Monsoon)
+	var done(default, null): FutureTrigger<OutgoingResponse>;
+	
 	public var headers(default, null): Map<String, String> = new Map();
 	var cookies: Array<Cookie> = [];
 	var code = 200;

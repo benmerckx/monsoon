@@ -6,7 +6,7 @@ on the [express](https://github.com/strongloop/express) api.
 ```haxe
 using Monsoon;
 
-var app = new App();
+var app = new Monsoon();
 
 app.route('/', function (req, res) {
   res.send('Hello World');
@@ -22,9 +22,9 @@ app.listen(3000);
 
 ## Todo
 
-- [ ] allow path prefix for `App.use`
-- [ ] add method to pass request to next route
-- [ ] add `Request.sendFile`
+- [ ] allow path prefix for `Monsoon.use`
+- [x] add method to pass request to next route
+- [ ] add `Response.sendFile`
 - [ ] ensure type safety for params in macro (if path is set as constant)
 - [ ] body/multipart parsing
 - [ ] implement foxhole event loop for tcp
