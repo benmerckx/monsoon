@@ -5,6 +5,7 @@ import tink.core.Future;
 import tink.http.Response;
 import tink.http.Header.HeaderField;
 import tink.io.IdealSource;
+import sys.io.File;
 
 typedef Cookie = {
 	name: String,

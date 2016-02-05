@@ -11,16 +11,21 @@ import monsoon.PathMatcher;
 using tink.CoreApi;
 
 typedef AppOptions = {
-	?watch: Bool
+	?watch: Bool, ?threads: Int
 }
 
 class Monsoon {
-	var options: AppOptions;
+	var options: AppOptions = {
+		watch: false,
+		threads: 64
+	};
 	var routers: List<Router<Any>> = new List();
 	public var router(default, null): Router<Path>;
 
 	public function new(?options: AppOptions) {
-		this.options = options;
+		if (options != null)
+			for (key in Reflect.fields(options))
+				Reflect.setField(this.options, key, Reflect.field(options, key));
 		routers.add(cast router = new Router<Path>(new PathMatcher()));
 	}
 		
@@ -55,9 +60,9 @@ class Monsoon {
 	
 	public function listen(port: Int = 80) {
 		var container =
-			#if (neko && embed)
+			#if embed
 				new TcpContainer(port)
-			#elseif  ((!embed && neko) || php)
+			#elseif  (neko || php)
 				CgiContainer.instance
 			#elseif js
 				new NodeContainer(port)
@@ -68,7 +73,7 @@ class Monsoon {
 		
 		try {
 			container.run({
-				serve: serve,
+				serve: #if embed loop() #else serve #end,
 				onError: function(e) trace(e),
 				done: Future.trigger()
 			});
@@ -78,28 +83,50 @@ class Monsoon {
 			throw e;
 		}
 		
-		#if !php
-		if (options.watch != null && options.watch) {
-			new tink.concurrent.Thread(function () {
-				var file = neko.vm.Module.local().name;
-				
-				function stamp() return 
-					try FileSystem.stat(file).mtime.getTime()
-					catch (e:Dynamic) Math.NaN;
-					
-				var initial = stamp();
-				
-				while (true) {
-					Sys.sleep(.1);
-					if (stamp() > initial) {
-						Sys.println('File $file recompiled. Shutting down server');
-						Sys.exit(0);
-					}
-				}
-			});
-		}
+		#if embed
+		if (options.watch) watch();
 		#end
-		
-		return this;
+	}
+	
+	#if embed
+	function loop() {
+		var mutex = new tink.concurrent.Mutex();
+		var queue = new tink.concurrent.Queue<Pair<IncomingRequest, Callback<OutgoingResponse>>>();
+		for (i in 0 ... options.threads) {
+			new tink.concurrent.Thread(function () 
+				while (true) {
+					var req = queue.await();
+					serve(req.a).handle(function(response) {
+						req.b.invoke(response);
+					});
+				}
+			);
+		}
+		return function (incoming) { 
+			var trigger = Future.trigger();
+			queue.push(new Pair(incoming, function (res) tink.RunLoop.current.work(function () trigger.trigger(res))));
+			return trigger.asFuture();
+		}
+	}
+	#end
+	
+	function watch() {
+		#if embed
+		new tink.concurrent.Thread(function () {
+			var file = neko.vm.Module.local().name;
+			
+			function stamp() return 
+				try FileSystem.stat(file).mtime.getTime()
+				catch (e:Dynamic) Math.NaN;
+				
+			var initial = stamp();
+			
+			while (true) {
+				Sys.sleep(.1);
+				if (stamp() > initial)
+					Sys.exit(0);
+			}
+		});
+		#end
 	}
 }

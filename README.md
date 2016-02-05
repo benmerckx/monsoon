@@ -24,10 +24,10 @@ app.listen(3000);
 
 - [ ] allow path prefix for `Monsoon.use`
 - [x] add method to pass request to next route
-- [ ] add `Response.sendFile`
 - [ ] ensure type safety for params in macro (if path is set as constant)
 - [ ] body/multipart parsing
-- [ ] implement foxhole event loop for tcp
+- [x] implement foxhole event loop for tcp
+- [ ] proper error reporting
 - [ ] documentation
 - [ ] tests
 - [ ] haxelib release
