@@ -24,7 +24,7 @@ typedef CookieOptions = {
 class Response {
 	
 	@:allow(monsoon.Monsoon)
-	var done(default, null): FutureTrigger<OutgoingResponse>;
+	var done(default, null) = Future.trigger();
 	
 	public var headers(default, null): Map<String, String> = new Map();
 	var cookies: Array<Cookie> = [];
@@ -51,6 +51,11 @@ class Response {
 		this.code = code;
 		headers = ['Location' => url];
 		end();
+	}
+	
+	public function set(key: String, value: String) {
+		headers.set(key, value);
+		return this;
 	}
 	
 	public function end()

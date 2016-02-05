@@ -34,6 +34,14 @@ abstract Path(PathAbstr) {
 	static public function fromMethod(method: MethodPath)
 		return new Path(method.getParameters()[0], method.getName().toLowerCase());
 		
+	public static function format(path: String) {
+		path = path.replace('//', '/');
+		if (path.charAt(0) == '/') 
+			path = path.substr(1);
+		if (path.charAt(path.length-1) == '/') 
+			path = path.substr(0, path.length-1);
+		return path;
+	}
 }
 
 class PathAbstr {
@@ -55,8 +63,8 @@ class PathMatcher implements Matcher<Path> {
 	public function match(request: Request<Dynamic>, input: Path, types: Array<ParamType>): Outcome<Dynamic, Noise> {
 		if (input.method != 'all' && request.method != input.method) 
 			return Failure(Noise);
-		var path = format(input.path);
-		var uri = format(request.path);
+		var path = Path.format(input.path);
+		var uri = Path.format(request.path);
 		if (path == '*') 
 			return Success(null);
 		if (path.indexOf(':') == -1) {
@@ -87,15 +95,6 @@ class PathMatcher implements Matcher<Path> {
 			i++;
 		}
 		return Success(params);
-	}
-	
-	function format(path: String) {
-		path = path.replace('//', '/');
-		if (path.charAt(0) == '/') 
-			path = path.substr(1);
-		if (path.charAt(path.length-1) == '/') 
-			path = path.substr(0, path.length-1);
-		return path;
 	}
 	
 	function filter(value: String, type: String): Outcome<Dynamic, Noise>

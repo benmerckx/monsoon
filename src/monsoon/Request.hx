@@ -2,6 +2,8 @@ package monsoon;
 
 import tink.core.Future;
 import tink.http.Request.IncomingRequest;
+import haxe.DynamicAccess;
+import tink.http.KeyValue;
 
 @:allow(monsoon.Monsoon)
 class RequestAbstr<T> {
@@ -34,10 +36,17 @@ class RequestAbstr<T> {
 	public var ip(get, never): String;
 	inline function get_ip(): String return request.clientIp;
 	
+	public var query(get, never): Map<String, String>;
+	function get_query()
+		return [
+			for (p in KeyValue.parse(url.indexOf('?') > -1 ? url.split('?')[1] : ''))
+				p.a => (p.b == null ? null : StringTools.urlDecode(p.b))
+		];
+	
 	public function new(request: IncomingRequest)
 		this.request = request;
 	
-	public function pass()
+	public function next()
 		done.trigger(null);
 }
 

@@ -19,44 +19,51 @@ class Monsoon {
 		watch: false,
 		threads: 64
 	};
-	var routers: List<Router<Any>> = new List();
+	var routers: List<{router: Router<Any>, ?prefix: String}> = new List();
 	public var router(default, null): Router<Path>;
 
 	public function new(?options: AppOptions) {
 		if (options != null)
 			for (key in Reflect.fields(options))
 				Reflect.setField(this.options, key, Reflect.field(options, key));
-		routers.add(cast router = new Router<Path>(new PathMatcher()));
+		routers.add({router: cast router = new Router<Path>(new PathMatcher())});
 	}
 		
 	function serve(incoming: IncomingRequest) {
 		var trigger = Future.trigger();
-		next(incoming, 0, trigger);
-		return trigger.asFuture();
+		var request = new Request(incoming);
+		var response = new Response();
+		next(request, response, 0);
+		return response.done.asFuture();
 	}
 	
-	function next(incoming: IncomingRequest, index: Int, trigger: FutureTrigger<OutgoingResponse>) {
-		var request = new Request(incoming);
-		for (router in routers) {
+	function next(request: Request, response: Response, index: Int) {
+		var path: String = Path.format(request.path);
+		for (item in routers) {
+			var router = item.router;
+			if (item.prefix != null) {
+				if (path.substr(0, item.prefix.length) != item.prefix)
+					continue;
+				//request.path = Path.format(path.substr(item.prefix.length));
+			}
 			switch router.findRoute(request, index) {
 				case Success(match):
 					var route = match.a;
 					request.params = match.b;
-					var response = new Response();
-					response.done = trigger;
 					route.callback(request, response);
 					request.done.asFuture().handle(function(_) {
-						next(incoming, route.order, trigger);
+						next(request, response, route.order);
 					});
 					return;
 				default:
 			}
 		}
-		trigger.trigger(('404': OutgoingResponse));
+		response.done.trigger(('404': OutgoingResponse));
 	}
 	
-	public function use(router: Router<Any>)
-		routers.add(cast router);
+	public function use(?prefix: String, router: Router<Dynamic>) {
+		routers.add({router: cast router, prefix: prefix == null ? null : Path.format(prefix)});
+	}
 	
 	public function listen(port: Int = 80) {
 		var container =
@@ -83,9 +90,7 @@ class Monsoon {
 			throw e;
 		}
 		
-		#if embed
-		if (options.watch) watch();
-		#end
+		#if embed if (options.watch) watch(); #end
 	}
 	
 	#if embed
@@ -96,7 +101,7 @@ class Monsoon {
 			new tink.concurrent.Thread(function () 
 				while (true) {
 					var req = queue.await();
-					serve(req.a).handle(function(response) {
+					serve(req.a).handle(function(response){
 						req.b.invoke(response);
 					});
 				}
@@ -108,10 +113,8 @@ class Monsoon {
 			return trigger.asFuture();
 		}
 	}
-	#end
 	
 	function watch() {
-		#if embed
 		new tink.concurrent.Thread(function () {
 			var file = neko.vm.Module.local().name;
 			
@@ -127,6 +130,7 @@ class Monsoon {
 					Sys.exit(0);
 			}
 		});
-		#end
+		
 	}
+	#end
 }
