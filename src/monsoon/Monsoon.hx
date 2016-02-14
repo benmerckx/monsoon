@@ -8,6 +8,7 @@ import sys.FileSystem;
 import monsoon.Request;
 import monsoon.Response;
 import monsoon.PathMatcher;
+import haxe.CallStack;
 using tink.CoreApi;
 
 typedef AppOptions = {
@@ -50,16 +51,36 @@ class Monsoon {
 				case Success(match):
 					var route = match.a;
 					request.params = match.b;
-					route.callback(request, response);
+					try {
+						route.callback(request, response);
+					} catch (e: Dynamic) {
+						var stack = CallStack.exceptionStack();
+						response.done.trigger(error(
+							500, 'Internal server error',
+							'Uncaught exception: ' + Std.string(e) + "\n" +
+							CallStack.toString(stack)
+						));
+					}
 					request.done.asFuture().handle(function(_) {
+						request.done = Future.trigger();
 						next(request, response, route.order);
 					});
 					return;
 				default:
 			}
 		}
-		response.done.trigger(('404': OutgoingResponse));
+		response.done.trigger(error(
+			404, 'Not found', '404'
+		));
 	}
+	
+	function error(code, title, data)
+		return new OutgoingResponse(
+			new ResponseHeader(
+				code, title, []
+			), 
+			data
+		);
 	
 	public function use(?prefix: String, router: Router<Dynamic>) {
 		routers.add({router: cast router, prefix: prefix == null ? null : Path.format(prefix)});
@@ -74,7 +95,7 @@ class Monsoon {
 			#elseif js
 				new NodeContainer(port)
 			#else
-				null
+				#error
 			#end
 		;
 		

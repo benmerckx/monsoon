@@ -1,15 +1,14 @@
 package monsoon;
 
-import tink.core.Future;
 import tink.http.Request.IncomingRequest;
-import haxe.DynamicAccess;
 import tink.http.KeyValue;
+using tink.CoreApi;
 
 @:allow(monsoon.Monsoon)
 class RequestAbstr<T> {
 	
 	public var params(default, null): T;
-	var done(default, never) = Future.trigger();
+	var done(default, null) = Future.trigger();
 	var request: IncomingRequest;
 	
 	public var url(get, never): String;
@@ -43,11 +42,20 @@ class RequestAbstr<T> {
 				p.a => (p.b == null ? null : StringTools.urlDecode(p.b))
 		];
 	
+	public var body(get, never): Body;
+	inline function get_body() return new Body(request.body);
+	
 	public function new(request: IncomingRequest)
 		this.request = request;
 	
 	public function next()
-		done.trigger(null);
+		done.trigger(Noise);
+		
+	public function toString() return haxe.Json.stringify({
+		method: method, url: url, path: path,
+		ip: ip, hostname: hostname, query: query,
+		params: params, body: body.toString()
+	}, null, ' ');
 }
 
 @:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())
