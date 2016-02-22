@@ -24,8 +24,8 @@ app.listen(3000);
 
 - [ ] allow path prefix for `Monsoon.use`
 - [x] add method to pass request to next route
-- [ ] ensure type safety for params in macro (if path is set as constant)
-- [ ] body/multipart parsing
+- [x] body parsing
+- [ ] multipart parsing
 - [x] implement foxhole event loop for tcp
 - [ ] proper error reporting
 - [ ] documentation

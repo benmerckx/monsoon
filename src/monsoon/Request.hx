@@ -42,11 +42,12 @@ class RequestAbstr<T> {
 				p.a => (p.b == null ? null : StringTools.urlDecode(p.b))
 		];
 	
-	public var body(get, never): Body;
-	inline function get_body() return new Body(request.body);
+	public var body(default, null): Body;
 	
-	public function new(request: IncomingRequest)
+	public function new(request: IncomingRequest) {
 		this.request = request;
+		this.body = new Body(request.body);
+	}
 	
 	public function next()
 		done.trigger(Noise);

@@ -38,7 +38,12 @@ class Response {
 	}
 	
 	public function cookie(name: String, value: String, ?options: CookieOptions) {
+		#if (!embed && neko)
+		// Neko does not set multiple headers of the same name, so we must use setCookie instead of pushing a header in the response
+		neko.Web.setCookie(name, value, options.expires, options.domain, options.path, options.secure, options.httpOnly);
+		#else
 		cookies.push({name: name, value: value, options: options});
+		#end
 		return this;
 	}
 	

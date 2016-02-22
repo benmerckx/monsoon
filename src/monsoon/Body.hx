@@ -10,22 +10,25 @@ import haxe.io.BytesOutput;
 #end
 using tink.CoreApi;
 
-abstract Body(Source) {
-
-	inline public function new(source: Source) {
-		this = source;
+private class Impl {
+	var source: Source;
+	var body: String = null;
+	
+	public function new(source: Source) {
+		this.source = source;
 	}
 	
-	@:to
 	public function toString(): String {
+		if (body != null) 
+			return body;
 		#if embed
 		// This checks for LimitedSource vd StdSource, otherwise this fails if there's no post data - todo: find a proper way to check
-		if (!Reflect.hasField(this, 'surplus')) 
-			return '';
+		if (!Reflect.hasField(source, 'surplus')) 
+			return body = '';
 		var queue = new Queue<Outcome<String, Error>>();
 		RunLoop.current.work(function () {
 			var buf = new BytesOutput();
-			this.pipeTo(Sink.ofOutput('HTTP request body buffer', buf)).handle(function (x) queue.add(switch x {
+			source.pipeTo(Sink.ofOutput('HTTP request body buffer', buf)).handle(function (x) queue.add(switch x {
 				case AllWritten: 
 					Success(buf.getBytes().toString());
 				case SourceFailed(e):
@@ -34,23 +37,36 @@ abstract Body(Source) {
 					Failure(null);
 			}));
 		});
-		return switch queue.await() {
-			case Success(s): s;
-			default: '';
-		}
+		body = queue.await().sure();
+		return body;
 		#end
-		// todo: implement for other targets
-		return '';
+		#if ((!embed && neko) || php)
+		var buffer = #if neko neko #elseif php php #end.Web.getPostData();
+		return body = buffer == null ? '' : buffer;
+		#end
+		return body = '';
 	}
 	
-	@:to 
-	// todo: keyvalue is not ok for a post with multiple keys
 	public function parseQueryString(): Map<String, String> {
-		var body = toString();
+		if (body == null)
+			body = toString();
 		return [
 			for (p in KeyValue.parse(body))
-				p.a => (p.b == null ? null : StringTools.urlDecode(p.b))
+				StringTools.urlDecode(p.a) => (p.b == null ? null : StringTools.urlDecode(p.b))
 		];
 	}
+}
+
+abstract Body(Impl) {
+	inline public function new(source: Source)
+		this = new Impl(source);
 	
+	@:to
+	public function toString(): String
+		return this.toString();
+	
+	@:to 
+	// todo: keyvalue is not ok for a post body with multiple keys
+	public function parseQueryString(): Map<String, String>
+		return this.parseQueryString();
 }
