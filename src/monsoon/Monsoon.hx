@@ -1,6 +1,7 @@
 package monsoon;
 
 import tink.http.Container;
+import tink.http.Header.HeaderField;
 import tink.http.Request;
 import tink.http.Response;
 import tink.core.Future;
@@ -77,7 +78,7 @@ class Monsoon {
 	function error(code, title, data)
 		return new OutgoingResponse(
 			new ResponseHeader(
-				code, title, []
+				code, title, [new HeaderField('Content-Type', 'text/plain; charset=utf-8')]
 			), 
 			data
 		);

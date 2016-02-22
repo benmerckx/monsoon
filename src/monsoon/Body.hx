@@ -2,12 +2,14 @@ package monsoon;
 
 import tink.io.Source;
 import tink.http.KeyValue;
-#if embed
+
+#if (embed || nodejs)
 import tink.io.Sink;
 import tink.RunLoop;
 import tink.concurrent.Queue;
 import haxe.io.BytesOutput;
 #end
+
 using tink.CoreApi;
 
 private class Impl {
@@ -21,7 +23,7 @@ private class Impl {
 	public function toString(): String {
 		if (body != null) 
 			return body;
-		#if embed
+		#if (embed || nodejs)
 		// This checks for LimitedSource vd StdSource, otherwise this fails if there's no post data - todo: find a proper way to check
 		if (!Reflect.hasField(source, 'surplus')) 
 			return body = '';
