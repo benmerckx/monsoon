@@ -8,6 +8,8 @@ import tink.io.Sink;
 import tink.RunLoop;
 import tink.concurrent.Queue;
 import haxe.io.BytesOutput;
+import tink.io.Worker;
+import tink.io.Pipe.PipeResult;
 #end
 
 using tink.CoreApi;
@@ -21,9 +23,10 @@ private class Impl {
 	}
 	
 	public function toString(): String {
+		#if nodejs return ''; #end
 		if (body != null) 
 			return body;
-		#if (embed || nodejs)
+		#if embed
 		// This checks for LimitedSource vd StdSource, otherwise this fails if there's no post data - todo: find a proper way to check
 		if (!Reflect.hasField(source, 'surplus')) 
 			return body = '';
@@ -39,14 +42,34 @@ private class Impl {
 					Failure(null);
 			}));
 		});
-		body = queue.await().sure();
-		return body;
+		return body = switch queue.await() {
+			case Success(s): s;
+			default: '';
+		}		
 		#end
 		#if ((!embed && neko) || php)
 		var buffer = #if neko neko #elseif php php #end.Web.getPostData();
 		return body = buffer == null ? '' : buffer;
 		#end
 		return body = '';
+	}
+	
+	public function toStringAsync(): Future<String> {
+		#if (embed || nodejs)
+		var trigger = new FutureTrigger<String>();
+		var out = new BytesOutput();
+		source
+		.pipeTo(Sink.ofOutput('HTTP request body buffer', out, Worker.EAGER))
+		.handle(function(x) 
+			trigger.trigger(switch x {
+				case AllWritten: out.getBytes().toString();
+				default: '';
+			})
+		);
+		return trigger.asFuture();
+		#else
+		return Future.sync(toString());
+		#end
 	}
 	
 	public function parseQueryString(): Map<String, String> {
@@ -62,7 +85,11 @@ private class Impl {
 abstract Body(Impl) {
 	inline public function new(source: Source)
 		this = new Impl(source);
-	
+		
+	@:to
+	public function toStringAsync(): Future<String>
+		return this.toStringAsync();
+		
 	@:to
 	public function toString(): String
 		return this.toString();

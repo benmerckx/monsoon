@@ -52,11 +52,11 @@ class RequestAbstr<T> {
 	public function next()
 		done.trigger(Noise);
 		
-	public function toString() return haxe.Json.stringify({
+	public function toString() return Std.string({
 		method: method, url: url, path: path,
 		ip: ip, hostname: hostname, query: query,
 		params: params, body: body.toString()
-	}, null, ' ');
+	});
 }
 
 @:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())
