@@ -1,6 +1,3 @@
-sudo: required
-services:
-  - docker
 language: haxe
 haxe:
   - "3.2.1"
@@ -12,5 +9,7 @@ matrix:
 install:
   - sudo apt-get install -y nodejs
   - echo "y" | haxelib install ./tests/tests.hxml
+  - sudo apt-get install php5-cli
 script:
-  - ./tests/run.sh
+  - ./tests/build.sh
+  - node tests/index.js

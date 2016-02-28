@@ -1,22 +1,52 @@
 var hippie = require('hippie'),
-	targets = ['neko', 'cpp', 'nodejs', 'mod_neko', 'php']
+	spawn = require('child_process').spawn,
+	port = 4000,
+	targets = [
+		{name: 'neko', process: (port) => spawn('neko', ['bin/neko/index.n', port])}, 
+		{name: 'cpp', process: (port) => spawn('./bin/cpp/Run', [port])},
+		{name: 'nodejs', process: (port) => spawn('node', ['bin/node/index.js', port])},
+		{name: 'mod_neko', process: (port) => spawn('nekotools', ('server -rewrite -p '+port+' -d bin/mod_neko').split(' '))},
+		{name: 'php', process: (port) => spawn('php', ('-S 0.0.0.0:'+port+' -file bin/php/index.php').split(' '))}
+	]
 
 function time() {
 	var hrTime = process.hrtime()
 	return (hrTime[0] * 1000000 + hrTime[1] / 1000) / 1000
 }
 
+function logProgress(data) {
+	var str = data.toString(), 
+	lines = str.split(/(\r?\n)/g)
+	console.log(lines.join(""))
+}
+
 targets.map(function (target, index) {
-	if (target == 'mod_neko') return
-	console.log('Testing '+target)
-	var start = time()
-	hippie()
-	.get('http://localhost:300'+index)
-	.expectStatus(200)
-	.expectBody('ok')
-	.end(function(err, res, body) {
-		if (err) throw err
-		var end = time()-start
-		console.log(target+' finished in '+Math.round(end)+'ms')
-	})
+	console.log('Testing '+target.name)
+	port++
+
+	(function(port) {
+		var child = target.process(port)
+
+		setTimeout(() => {
+			var start = time()
+			child.on('error', (err) => console.log(err))
+			//child.stderr.on('data', logProgress)
+			//child.stdout.on('data', logProgress)
+
+			hippie()
+			.get('http://localhost:'+port)
+			.expectStatus(200)
+			.expectBody('ok')
+			.end(function(err, res, body) {
+				if (err) {
+					child.kill()
+					console.log(target.name+' failed: '+err)
+					return
+				}
+				var end = time()-start
+				console.log(target.name+' finished in '+Math.round(end)+'ms')
+				child.kill()
+			})
+		}, 100)
+	})(port)
 })
