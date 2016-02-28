@@ -24,6 +24,9 @@ var hippie = require('hippie'),
 		}
 	]
 
+console.log(__dirname)
+process.chdir(__dirname)
+
 function time() {
 	var hrTime = process.hrtime()
 	return (hrTime[0] * 1000000 + hrTime[1] / 1000) / 1000
@@ -36,17 +39,15 @@ function logProgress(data) {
 }
 
 targets.map(function (target, index) {
-	console.log('Testing '+target.name)
-	port++
-
+	
 	(function(port) {
-		var child = target.process(port)
-
+		var child = target.process(port).on('error', console.log)
 		setTimeout(function() {
+			console.log('Testing '+target.name)
 			var start = time()
-			child.on('error', console.log)
-			//child.stderr.on('data', logProgress)
-			//child.stdout.on('data', logProgress)
+
+			child.stderr.on('data', logProgress)
+			child.stdout.on('data', logProgress)
 
 			hippie()
 			.get('http://localhost:'+port)
@@ -63,5 +64,6 @@ targets.map(function (target, index) {
 				child.kill()
 			})
 		}, 100)
-	})(port)
+	})(port++)
+	
 })
