@@ -10,6 +10,6 @@ matrix:
   allow_failures:
     - haxe: development
 hxml:
-  - tests.hxml
+  - ./tests/tests.hxml
 script:
   - ./tests/run.sh
