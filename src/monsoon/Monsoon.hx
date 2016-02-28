@@ -130,7 +130,7 @@ class Monsoon {
 			throw e;
 		}
 		
-		#if embed if (options.watch) watch(); #end
+		#if (embed && neko) if (options.watch) watch(); #end
 	}
 	
 	#if embed
@@ -154,6 +154,7 @@ class Monsoon {
 		}
 	}
 	
+	#if neko
 	function watch() {
 		new tink.concurrent.Thread(function () {
 			var file = neko.vm.Module.local().name;
@@ -172,5 +173,7 @@ class Monsoon {
 		});
 		
 	}
+	#end
+	
 	#end
 }

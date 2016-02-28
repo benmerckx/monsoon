@@ -1,6 +1,6 @@
 *.n
 bin
-Forever.hx
-Main.hx
-build.hxml
-docker-compose.yml
+/Forever.hx
+/Main.hx
+/build.hxml
+/docker-compose.yml

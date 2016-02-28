@@ -101,15 +101,15 @@ class PathMatcher implements Matcher<Path> {
 		return switch (type) {
 			case 'Int':
 				var nr = Std.parseInt(value);
-				if (nr == null) Failure(Noise);
+				if (Math.isNaN(nr)) Failure(Noise);
 				else if (Std.string(nr) != value) Failure(Noise);
 				else Success(nr);
 			case 'Float':
 				var nr = Std.parseFloat(value);
-				if (nr == null) Failure(Noise);
+				if (Math.isNaN(nr)) Failure(Noise);
 				else if (Std.string(nr) != value) Failure(Noise);
 				else Success(nr);
-			case 'Bool':
+			case 'Bool': 
 				if (value == '0' || value == 'false') Success(false);
 				if (value == '1' || value == 'true') Success(true);
 				Failure(Noise);

@@ -1,0 +1,13 @@
+language: haxe
+haxe:
+  - "3.2.0"
+  - "3.2.1"
+  - development
+neko: "2.0.0"
+matrix:
+  allow_failures:
+    - haxe: development
+hxml:
+  - tests.hxml
+script:
+  - haxe tests.hxml

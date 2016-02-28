@@ -23,7 +23,7 @@ class Body extends Middleware {
 	override public function process(request: Request, response: Response) {
 		source = request.request.body;
 		
-		#if embed
+		#if (embed && neko)
 		// This checks for LimitedSource vd StdSource, otherwise this fails if there's no post data - todo: find a proper way to check
 		if (!Reflect.hasField(source, 'surplus')) {
 			done.trigger(true);
