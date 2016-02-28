@@ -89,7 +89,7 @@ class Monsoon {
 			}
 		}
 		response.done.trigger(error(
-			404, 'Not found', '404'
+			404, 'Not found', '404 request: '+Std.string(request)
 		));
 	}
 	

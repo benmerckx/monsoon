@@ -13,7 +13,6 @@ typedef MiddlewareItem = {
 
 typedef Route<P> = {
 	path: P,
-	//callback: Function, //Request -> Response -> Void,
 	invoke: Request -> Response -> Array<Middleware> -> Void,
 	types: Array<ParamType>,
 	middleware: Array<MiddlewareItem>,

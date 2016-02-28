@@ -60,7 +60,7 @@ class RouteHelper {
 		
 		var response = args.shift();
 		
-		var calls: Array<Expr> = [macro @:pos(callback.pos) request, macro @:pos(callback.pos) response];
+		var calls: Array<Expr> = [macro @:pos(callback.pos) cast request, macro @:pos(callback.pos) response];
 		
 		// middleware
 		if (args.length > 0) {

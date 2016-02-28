@@ -22,7 +22,8 @@ var hippie = require('hippie'),
 			name: 'php', 
 			process: function(port) {return spawn('php', ('-S 0.0.0.0:'+port+' -file bin/php/index.php').split(' '))}
 		}
-	]
+	],
+	todo = 0
 
 console.log(__dirname)
 process.chdir(__dirname)
@@ -38,32 +39,65 @@ function logProgress(data) {
 	console.log(lines.join(""))
 }
 
+function functionName(fun) {
+	var ret = fun.toString()
+	ret = ret.substr('function '.length)
+	ret = ret.substr(0, ret.indexOf('('))
+	return ret
+}
+
+function setup(port) {
+	todo++
+	return hippie().base('http://localhost:'+port)
+}
+
+var tests = [
+	function testBase(api) {
+		return api.get('/').expectStatus(200).expectBody('ok')
+	},
+	function testArgString(api) {
+		return api.json().get('/arg/string').expectBody({arg: 'string'})
+	},
+	function testArgInt(api) {
+		return api.json().get('/arg/123').expectBody({arg: 123})
+	},
+	function testMiddleware(api) {
+		return api.post('/post').send('postbody').expectBody(JSON.stringify({body: 'postbody'}))
+	}
+]
+
 targets.map(function (target, index) {
 	
 	(function(port) {
 		var child = target.process(port).on('error', console.log)
 		setTimeout(function() {
-			console.log('Testing '+target.name)
-			var start = time()
+			var start = time(), 
+				todo = 0, 
+				done = 0, 
+				failed = 0
 
 			child.stderr.on('data', logProgress)
-			child.stdout.on('data', logProgress)
+			if (target.name != 'mod_neko')
+				child.stdout.on('data', logProgress)
 
-			hippie()
-			.get('http://localhost:'+port)
-			.expectStatus(200)
-			.expectBody('ok')
-			.end(function(err, res, body) {
-				if (err) {
-					child.kill()
-					console.log(target.name+' failed: '+err)
-					return
-				}
-				var end = time()-start
-				console.log(target.name+' finished in '+Math.round(end)+'ms')
-				child.kill()
+			tests.map(function (f) {
+				todo++
+				setTimeout(function() {
+					f(setup(port)).end(function(err, res, body) {
+						if (err) {
+							failed++
+							console.log(target.name+' failed '+functionName(f)+': \n'+err)
+						}
+						done++
+						if (todo === done) {
+							var end = time()-start
+							console.log(target.name+' passed '+(todo-failed)+'/'+todo+' tests in '+Math.round(end)+'ms')
+							child.kill()
+						}
+					})
+				}, 0)
 			})
-		}, 100)
+		}, 200)
 	})(port++)
 	
 })
