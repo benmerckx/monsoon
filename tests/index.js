@@ -44,7 +44,7 @@ targets.map(function (target, index) {
 
 		setTimeout(function() {
 			var start = time()
-			child.on('error', (err) => console.log(err))
+			child.on('error', console.log)
 			//child.stderr.on('data', logProgress)
 			//child.stdout.on('data', logProgress)
 
