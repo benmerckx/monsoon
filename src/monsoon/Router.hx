@@ -2,14 +2,22 @@ package monsoon;
 
 import haxe.DynamicAccess;
 import monsoon.PathMatcher;
+import haxe.Constraints.Function;
 
 using tink.CoreApi;
 
+typedef MiddlewareItem = {
+	name: String,
+	create: Void -> Dynamic
+}
+
 typedef Route<P> = {
 	path: P,
-	callback: Request -> Response -> Void,
+	//callback: Function, //Request -> Response -> Void,
+	invoke: Request -> Response -> Array<Middleware> -> Void,
 	types: Array<ParamType>,
-	order: Int
+	middleware: Array<MiddlewareItem>,
+	?order: Int
 }
 
 class Router<P> {
@@ -22,8 +30,9 @@ class Router<P> {
 		this.matcher = matcher;
 	}
 	
-	public function addRoute<T>(path: P, callback: Request<T> -> Response -> Void, types: Array<ParamType>) {
-		routes.add({path: path, callback: cast callback, types: types, order: ++index});
+	public function addRoute<T>(route: Route<P>) {
+		route.order = ++index;
+		routes.add(route);
 		return this;
 	}
 	

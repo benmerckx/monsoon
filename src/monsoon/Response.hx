@@ -21,6 +21,7 @@ typedef CookieOptions = {
 	?secure: Bool,
 }
 
+@:keep
 class Response {
 	
 	@:allow(monsoon.Monsoon)
@@ -66,7 +67,7 @@ class Response {
 	public function end()
 		send(null);
 		
-	public function send(output: IdealSource)
+	public function send(output: String)
 		done.trigger(new OutgoingResponse(
 			new ResponseHeader(code, code > 400 ? 'OK' : 'ERROR', tinkHeaders()),
 			output

@@ -1,3 +1,4 @@
+package;
 
 typedef Response = monsoon.Response;
 typedef Monsoon = monsoon.Monsoon;

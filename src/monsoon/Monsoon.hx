@@ -9,6 +9,7 @@ import sys.FileSystem;
 import monsoon.Request;
 import monsoon.Response;
 import monsoon.PathMatcher;
+import monsoon.Router;
 import haxe.CallStack;
 using tink.CoreApi;
 
@@ -43,17 +44,34 @@ class Monsoon {
 		var path: String = Path.format(request.path);
 		for (item in routers) {
 			var router = item.router;
-			if (item.prefix != null) {
+			/*if (item.prefix != null) {
 				if (path.substr(0, item.prefix.length) != item.prefix)
 					continue;
-				//request.path = Path.format(path.substr(item.prefix.length));
-			}
+			}*/
 			switch router.findRoute(request, index) {
 				case Success(match):
 					var route = match.a;
 					request.params = match.b;
 					try {
-						route.callback(request, response);
+						var iter = route.middleware.iterator(),
+							mw = [];
+							
+						function processNext(cb) {
+							if (iter.hasNext())
+								cb(iter.next());
+							else
+								route.invoke(request, response, mw);
+						}
+						
+						function middleware(item: MiddlewareItem) {
+							var inst: Middleware = item.create();
+							mw.push(inst);
+							inst.process(request, response);
+							inst.done.asFuture().handle(function(_) processNext(middleware));
+						}
+						
+						processNext(middleware);
+						
 					} catch (e: Dynamic) {
 						var stack = CallStack.exceptionStack();
 						response.done.trigger(error(

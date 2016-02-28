@@ -32,14 +32,17 @@ class RouteHelper {
 	public static function addRoute<A, B>(router: Expr, path: Expr, callback: Expr) {
 		var type = Context.typeExpr(callback),
 			args: Array<Arg>,
-			state = ComplexType.TAnonymous([]);
+			state = ComplexType.TAnonymous([]),
+			middleware = [];
+			
 		switch argsFromTypedExpr(type) {
 			case Success(a): args = a;
 			case Failure(e): Context.error(e, callback.pos);
 		}
+		
 		if (args.length < 2) 
 			Context.error('2 or more arguments expected', callback.pos);
-		var request = args[0];
+		var request = args.shift();
 		switch request.t {
 			case TInst(t, params): 
 				if (Std.string(t) != 'monsoon.RequestAbstr') 
@@ -54,7 +57,36 @@ class RouteHelper {
 			default:
 				Context.error('Request type parameter must be TAnonymous', callback.pos);
 		}
-		return macro $router.addRoute($path, $callback, $v{params});
+		
+		var response = args.shift();
+		
+		var calls: Array<Expr> = [macro @:pos(callback.pos) request, macro @:pos(callback.pos) response];
+		
+		// middleware
+		if (args.length > 0) {
+			middleware = args.map(function(arg) {
+				var type = TypeTools.toComplexType(Context.follow(arg.t));
+				return switch type {
+					case TPath(path): macro {
+						name: $v{arg.name},
+						create: function() return new $path()
+					};
+					default:
+						Context.error('TPath expected for middleware type', callback.pos);
+				} 
+			});
+			for (i in 0 ... args.length)
+				calls.push(macro @:pos(callback.pos) cast middleware[$v{i}]);
+		}
+		
+		return macro $router.addRoute({
+			path: $path, 
+			invoke: function(request, response, middleware) {
+				($callback)($a{calls});
+			},
+			types: $v{params},
+			middleware: $a{middleware}
+		});
 	}
 	
 	static function argsFromTypedExpr(type: TypedExpr): Outcome<Array<Arg>, String>

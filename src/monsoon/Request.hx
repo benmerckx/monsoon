@@ -1,9 +1,11 @@
 package monsoon;
 
+import haxe.DynamicAccess;
 import tink.http.Request.IncomingRequest;
 import tink.http.KeyValue;
 using tink.CoreApi;
 
+@:keep
 @:allow(monsoon.Monsoon)
 class RequestAbstr<T> {
 	
@@ -42,11 +44,10 @@ class RequestAbstr<T> {
 				p.a => (p.b == null ? null : StringTools.urlDecode(p.b))
 		];
 	
-	public var body(default, null): Body;
+	public var middleware(default, null): DynamicAccess<Middleware>;
 	
 	public function new(request: IncomingRequest) {
 		this.request = request;
-		this.body = new Body(request.body);
 	}
 	
 	public function next()
@@ -55,7 +56,7 @@ class RequestAbstr<T> {
 	public function toString() return Std.string({
 		method: method, url: url, path: path,
 		ip: ip, hostname: hostname, query: query,
-		params: params, body: body.toString()
+		params: params
 	});
 }
 
