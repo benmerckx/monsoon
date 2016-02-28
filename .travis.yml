@@ -9,6 +9,8 @@ neko: "2.0.0"
 matrix:
   allow_failures:
     - haxe: development
+install:
+  - sudo apt-get install -y nodejs
 hxml:
   - ./tests/tests.hxml
 script:

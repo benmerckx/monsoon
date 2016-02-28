@@ -4,3 +4,4 @@ bin
 /Main.hx
 /build.hxml
 /docker-compose.yml
+node_modules

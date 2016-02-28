@@ -1,29 +1,13 @@
-neko:
-  image: nitrobin/haxe-minimal
-  volumes:
-   - ./bin/neko/:/app
-  working_dir: /app
-  command: neko index.n
-  ports:
-   - "3000:80"
-
 mod_neko:
   build: build/mod_neko
   volumes:
    - ./bin/mod_neko:/var/www/html
   ports: 
-   - "3001:80"
+   - "3003:80"
 
-node:
-  build: build/node
-  volumes:
-   - ./bin/node:/app 
-  ports: 
-   - "3002:80" 
-   
 php:
   image: codeurs/apache-php
   volumes:
    - ./bin/php:/var/www/html
   ports:
-   - "3003:80"
+   - "3004:80"

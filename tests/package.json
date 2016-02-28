@@ -1,0 +1,9 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "hippie": "^0.4.0"
+  }
+}
