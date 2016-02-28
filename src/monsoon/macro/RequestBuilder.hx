@@ -7,21 +7,15 @@ import haxe.macro.TypeTools;
 
 using Lambda;
 
-class RequestBuilder {
-	
-	@:allow(monsoon.macro.RouteHelper)
-	static var state: ComplexType = null;
-	
+class RequestBuilder {	
 	static public function buildGeneric() {
-		state = (macro: {});
+		var state = (macro: {});
 		switch (Context.getLocalType()) {
 			case TInst(cl, params):
-				if (params.length == 1) {
+				if (params.length == 1)
 					state = TypeTools.toComplexType(Context.follow(params[0]));
-				}
-				if (params.length > 1) {
+				if (params.length > 1)
 					Context.error("Too many type parameters, expected 0 or 1", Context.currentPos());
-				}
 			default:
 				Context.error("Type expected", Context.currentPos());
 		}
@@ -32,5 +26,4 @@ class RequestBuilder {
 			name: 'Request'
 		});
 	}
-	
 }

@@ -5,42 +5,74 @@ import haxe.macro.Expr;
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.TypeTools;
 import haxe.macro.Type;
+import tink.core.Outcome;
 
 #if !macro
 import monsoon.Router;
 import monsoon.Monsoon;
 #end
 
+typedef Arg = {
+	name: String,
+	t: Type
+}
+
 class AppHelper {
-	macro public static function route<A, B>(app: haxe.macro.Expr.ExprOf<Monsoon>, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
+	macro public static function route<A, B>(app: ExprOf<Monsoon>, path: Expr, callback: Expr)
 		return RouteHelper.addRoute(macro $app.router, path, callback);
-	}
 }
 
 class RouteHelper {
 	
-	macro public static function route<A, B>(router: haxe.macro.Expr.ExprOf<Router<A>>, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
+	macro public static function route<A, B>(router: ExprOf<Router<A>>, path: Expr, callback: Expr)
 		return RouteHelper.addRoute(router, path, callback);
-	}
 	
 	#if macro
 	
-	public static function addRoute<A, B>(router: haxe.macro.Expr, path: haxe.macro.Expr, callback: haxe.macro.Expr) {
-		Context.typeExpr(callback);
-		var state = RequestBuilder.state;
-		var params = [];
-		if (state == null) 
-			state = TAnonymous([]);
-		switch (state) {
-			case TAnonymous(fields):
-				params = fields.map(fieldInfo);
-			default: 
-				// Move this to request builder for proper position
-				Context.error('Request type parameter must be TAnonymous', Context.currentPos());
+	public static function addRoute<A, B>(router: Expr, path: Expr, callback: Expr) {
+		var type = Context.typeExpr(callback),
+			args: Array<Arg>,
+			state = ComplexType.TAnonymous([]);
+		switch argsFromTypedExpr(type) {
+			case Success(a): args = a;
+			case Failure(e): Context.error(e, callback.pos);
 		}
-		RequestBuilder.state = null;
+		if (args.length < 2) 
+			Context.error('2 or more arguments expected', callback.pos);
+		var request = args[0];
+		switch request.t {
+			case TInst(t, params): 
+				if (Std.string(t) != 'monsoon.RequestAbstr') 
+					Context.error('Type Request expected for argument '+request.name, callback.pos);
+				state = TypeTools.toComplexType(Context.follow(params[0]));
+			default:
+		}
+		var params = [];
+		switch (state) {
+			case ComplexType.TAnonymous(fields):
+				params = fields.map(fieldInfo);
+			default:
+				Context.error('Request type parameter must be TAnonymous', callback.pos);
+		}
 		return macro $router.addRoute($path, $callback, $v{params});
 	}
+	
+	static function argsFromTypedExpr(type: TypedExpr): Outcome<Array<Arg>, String>
+		return switch type.expr {
+			case TFunction(func):
+				Success(argsFromTFunc(func));
+			case TField(e, a):
+				switch type.t {
+					case TFun(a, _): Success(a);
+					default: 
+						Failure('Callback must be a function');
+				}
+			default:
+				Failure('Callback must be a function');
+		}
+		
+	static function argsFromTFunc(f: TFunc): Array<Arg>
+		return f.args.map(function(arg) return {name: arg.v.name, t: arg.v.t});
 	
 	static function fieldInfo(field: Field)
 		return {
