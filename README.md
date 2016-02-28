@@ -1,5 +1,7 @@
 # Monsoon
 
+[![Build Status](https://travis-ci.org/benmerckx/monsoon.svg?branch=master)](https://travis-ci.org/benmerckx/monsoon)
+
 A simple router over [tink_http](https://github.com/haxetink/tink_http), based mostly 
 on the [express](https://github.com/strongloop/express) api.
 	
