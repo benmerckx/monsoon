@@ -9,7 +9,7 @@ matrix:
 install:
   - sudo apt-get install -y nodejs
   - echo "y" | haxelib install ./tests/tests.hxml
-  - sudo apt-get install php5-cli
+  - sudo apt-get install -y php5-cli
 script:
   - ./tests/build.sh
   - node tests/index.js
