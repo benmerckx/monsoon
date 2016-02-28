@@ -16,7 +16,7 @@ var hippie = require('hippie'),
 		},
 		{
 			name: 'mod_neko', 
-			process: function(port) {return spawn('nekotools', ('server -rewrite -p '+port+' -d bin/mod_neko').split(' '))}
+			process: function(port) {return spawn('nekotools', ('server -h 0.0.0.0 -rewrite -p '+port+' -d bin/mod_neko').split(' '))}
 		},
 		{
 			name: 'php', 
@@ -48,7 +48,7 @@ function functionName(fun) {
 
 function setup(port) {
 	todo++
-	return hippie().base('http://localhost:'+port)
+	return hippie().base('http://0.0.0.0:'+port)
 }
 
 var tests = [
