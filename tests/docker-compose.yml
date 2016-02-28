@@ -3,6 +3,6 @@ neko_embedded:
   volumes:
    - ./bin/neko/:/app
   working_dir: /app
-  command: haxe --run Forever neko index.n
+  command: neko index.n
   ports:
    - "3000:80"

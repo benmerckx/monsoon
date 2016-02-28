@@ -46,8 +46,9 @@
 
 # build containers
 
--cmd cd tests && docker-compose up -d
+-cmd (cd tests && docker-compose up -d)
 
 # test response
 
+-cmd sleep 1
 -cmd curl http://localhost:3000
