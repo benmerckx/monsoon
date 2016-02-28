@@ -12,4 +12,4 @@ matrix:
 hxml:
   - tests.hxml
 script:
-  - haxe tests.hxml
+  - ./tests/run.sh
