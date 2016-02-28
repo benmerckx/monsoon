@@ -1,7 +1,7 @@
 neko_embedded:
   image: nitrobin/haxe-minimal
   volumes:
-   - .:/app
+   - ./bin/neko/:/app
   working_dir: /app
   command: haxe --run Forever neko index.n
   ports:
