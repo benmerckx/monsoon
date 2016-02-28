@@ -1,18 +1,16 @@
 package monsoon.middleware;
-import monsoon.Response;
 
+import monsoon.Response;
 import monsoon.Middleware;
 import monsoon.Request;
 import tink.io.Source;
 import tink.http.KeyValue;
-
-#if (embed || nodejs)
 import tink.io.Sink;
-import tink.RunLoop;
-import tink.concurrent.Queue;
 import haxe.io.BytesOutput;
 import tink.io.Worker;
-import tink.io.Pipe.PipeResult;
+
+#if embed
+import tink.RunLoop;
 #end
 
 using tink.CoreApi;
@@ -22,7 +20,7 @@ class Body extends Middleware {
 	var body: String = '';
 	
 	@:access(monsoon.RequestAbstr)
-	override public function process(request:Request, response:Response) {
+	override public function process(request: Request, response: Response) {
 		source = request.request.body;
 		
 		#if embed
@@ -31,38 +29,26 @@ class Body extends Middleware {
 			done.trigger(true);
 			return;
 		}
+		#end
 		
-		RunLoop.current.work(function () {
+		/*#if ((!embed && neko) || php)
+		body = #if neko neko #elseif php php #end.Web.getPostData();
+		if (body == null) body = '';
+		done.trigger(true);
+		return;
+		#end*/
+		
+		#if embed RunLoop.current.work(function () { #end
 			var buf = new BytesOutput();
-			source.pipeTo(Sink.ofOutput('HTTP request body buffer', buf)).handle(function (x) switch x {
+			source
+			.pipeTo(Sink.ofOutput('HTTP request body buffer', buf, Worker.EAGER))
+			.handle(function (x) switch x {
 				case AllWritten:
 					body = buf.getBytes().toString();
 					done.trigger(true);
 				default: done.trigger(true);
 			});
-		});	
-		return;
-		#end
-		
-		#if nodejs
-		var out = new BytesOutput();
-		source
-		.pipeTo(Sink.ofOutput('HTTP request body buffer', out, Worker.EAGER))
-		.handle(function(x) {
-			switch x {
-				case AllWritten: body = out.getBytes().toString();
-				default:
-			}
-			done.trigger(true);
-		});
-		return;
-		#end
-		
-		#if (neko || php)
-		var buffer = #if neko neko #elseif php php #end.Web.getPostData();
-		body = buffer == null ? '' : buffer;
-		done.trigger(true);
-		#end
+		#if embed }); #end
 	}
 	
 	public function toMap(): Map<String, String>

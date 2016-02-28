@@ -3,12 +3,12 @@
   "url" : "https://github.com/benmerckx/monsoon",
   "license": "MIT",
   "tags": ["js", "html", "web"],
-  "description": "Routing for tink_http.",
+  "description": "Minimal haxe web framework",
   "version": "0.0.0",
   "releasenote": "Alpha",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
-  	"tink_http": "",
+  	"tink_http": ""
   }
 }
