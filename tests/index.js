@@ -2,11 +2,26 @@ var hippie = require('hippie'),
 	spawn = require('child_process').spawn,
 	port = 4000,
 	targets = [
-		{name: 'neko', process: (port) => spawn('neko', ['bin/neko/index.n', port])}, 
-		{name: 'cpp', process: (port) => spawn('./bin/cpp/Run', [port])},
-		{name: 'nodejs', process: (port) => spawn('node', ['bin/node/index.js', port])},
-		{name: 'mod_neko', process: (port) => spawn('nekotools', ('server -rewrite -p '+port+' -d bin/mod_neko').split(' '))},
-		{name: 'php', process: (port) => spawn('php', ('-S 0.0.0.0:'+port+' -file bin/php/index.php').split(' '))}
+		{
+			name: 'neko', 
+			process: function(port) {return spawn('neko', ['bin/neko/index.n', port])}
+		}, 
+		{
+			name: 'cpp', 
+			process: function(port) {return spawn('./bin/cpp/Run', [port])}
+		},
+		{
+			name: 'nodejs', 
+			process: function(port) {return spawn('node', ['bin/node/index.js', port])}
+		},
+		{
+			name: 'mod_neko', 
+			process: function(port) {return spawn('nekotools', ('server -rewrite -p '+port+' -d bin/mod_neko').split(' '))}
+		},
+		{
+			name: 'php', 
+			process: function(port) {return spawn('php', ('-S 0.0.0.0:'+port+' -file bin/php/index.php').split(' '))}
+		}
 	]
 
 function time() {
@@ -27,7 +42,7 @@ targets.map(function (target, index) {
 	(function(port) {
 		var child = target.process(port)
 
-		setTimeout(() => {
+		setTimeout(function() {
 			var start = time()
 			child.on('error', (err) => console.log(err))
 			//child.stderr.on('data', logProgress)
