@@ -9,7 +9,6 @@ import sys.FileSystem;
 import monsoon.Request;
 import monsoon.Response;
 import monsoon.Router;
-import haxe.CallStack;
 using tink.CoreApi;
 
 typedef AppOptions = {
@@ -31,98 +30,18 @@ class Monsoon {
 	}
 		
 	function serve(incoming: IncomingRequest) {
-		var trigger = Future.trigger(),
-			request = new Request(incoming),
+		var request = new Request(incoming),
 			response = new Response();
 		
-		passThroughRouter(router, request, response).handle(function(success) {
+		router.passThrough(request, response).handle(function(success) {
 			if (!success)
-				notFound(request, response);
+				response.clear().status(404).send(
+					'404 request: '+Std.string(request)
+				);
 		});
 		
 		return response.done.asFuture();
 	}
-	
-	function notFound(request: Request, response: Response) {
-		response.done.trigger(error(
-			404, 'Not found', '404 request: '+Std.string(request)
-		));
-	}
-	
-	function passThroughRouter(router: Router, request: Request, response: Response): Future<Bool> {
-		var trigger = Future.trigger();
-		
-		function done(_) {
-			trigger.trigger(true);
-		}
-		
-		function pass(next, route, _) {
-			request.done = Future.trigger();
-			next(router, request, response, route.order);
-		}
-		
-		function next(router, request, response, index) {
-			switch handleRoute(router, request, response, index) {
-				case Success(route):
-					request.done.asFuture().handle(pass.bind(next, route));
-					response.done.asFuture().handle(done);
-				default:
-					trigger.trigger(false);
-			}
-		}
-		
-		next(router, request, response, 0);
-		
-		return trigger.asFuture();
-	}
-	
-	function handleRoute(router: Router, request: Request, response: Response, index: Int): Outcome<Route<Any>, Noise>
-		switch router.findRoute(request, index) {
-			case Success(match):
-				var route = match.a;
-				request.params = match.b;
-				try {
-					var iter = route.middleware.iterator(),
-						mw = [];
-						
-					function processNext(cb) {
-						if (iter.hasNext())
-							cb(iter.next());
-						else
-							route.invoke(request, response, mw);
-					}
-					
-					function middleware(item: MiddlewareItem) {
-						var mwRouter = new Router(router);
-						var inst: Middleware = item.create(mwRouter);
-						mw.push(inst);
-						passThroughRouter(mwRouter, request, response).handle(function(success) {
-							if (!success)
-								processNext(middleware);
-						});
-					}
-					
-					processNext(middleware);
-				} catch (e: Dynamic) {
-					var stack = CallStack.exceptionStack();
-					response.done.trigger(error(
-						500, 'Internal server error',
-						'Uncaught exception: ' + Std.string(e) + "\n" +
-						CallStack.toString(stack)
-					));
-				}
-				return Success(route);
-			default:
-				return Failure(Noise);
-		}
-	
-	function error(code, title, data)
-		return new OutgoingResponse(
-			new ResponseHeader(
-				code, title, [new HeaderField('Content-Type', 'text/plain; charset=utf-8')]
-			), 
-			data
-		);
 	
 	public function listen(port: Int = 80) {
 		var container =
@@ -153,6 +72,7 @@ class Monsoon {
 	}
 	
 	#if embed
+	
 	function loop() {
 		var queue = new tink.concurrent.Queue<Pair<IncomingRequest, Callback<OutgoingResponse>>>();
 		for (i in 0 ... options.threads) {
@@ -193,5 +113,9 @@ class Monsoon {
 	}
 	#end
 	
+	#end
+	
+	#if display
+	public function route<P>(path: P, callback: Request -> Response -> Void) {}
 	#end
 }

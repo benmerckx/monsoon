@@ -25,11 +25,11 @@ class MiddlewareCollection {
 }
 
 @:keep
-@:allow(monsoon.Monsoon)
+@:allow(monsoon.Router)
 class RequestAbstr<T> {
 	
 	public var params(default, null): T;
-	var done(default, null) = Future.trigger();
+	public var done(default, null) = Future.trigger();
 	var request: IncomingRequest;
 	
 	public var url(get, never): String;

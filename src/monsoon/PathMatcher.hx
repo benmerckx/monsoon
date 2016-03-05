@@ -2,6 +2,7 @@ package monsoon;
 
 import haxe.DynamicAccess;
 import haxe.io.Path;
+import monsoon.Matcher;
 
 using tink.CoreApi;
 using Lambda;
@@ -23,13 +24,14 @@ enum MethodPath {
 abstract Path(PathAbstr) {
 	
 	public static inline var IDENTIFIER = ':';
+	public static inline var ASTERISK = '*';
 	
 	public inline function new(path, method)
 		this = new PathAbstr(path, method);
 	
 	@:from
 	static public function fromString(s:String) 
-		return (MethodPath.All(s): Path);
+		return new Path(s, Method.All);
 		
 	@:from
 	static public function fromMethod(method: MethodPath)
@@ -65,41 +67,75 @@ class PathMatcher implements Matcher<Path> {
 		return input;
 	}
 	
-	public function match(request: Request<Dynamic>, input: Path, types: Array<ParamType>): Outcome<Dynamic, Noise> {
-		if (input.method != 'all' && request.method != input.method) 
+	public function match(prefix: Array<Any>, request: Request<Dynamic>, input: Path, types: Array<ParamType>, isMiddleware): Outcome<Dynamic, Noise> {
+		if (input.method != Method.All && request.method != input.method) 
 			return Failure(Noise);
-		var path = Path.format(input.path);
-		var uri = Path.format(request.path);
-		if (path == '*') 
+			
+		var path = Path.format(input.path),
+			uri = Path.format(request.path);
+			
+		for (p in prefix)
+			if (Std.is(p, PathAbstr))
+				path = (cast p).path + '/' + path;
+				
+		if (isMiddleware)
+			path += '/*';
+		path = Path.format(path);
+			
+		if (path == Path.ASTERISK) 
 			return Success(null);
-		if (path.indexOf(':') == -1) {
+		if (path.indexOf(Path.IDENTIFIER) == -1 && path.indexOf(Path.ASTERISK) == -1) {
 			if (uri == path) 
 				return Success(null);
 			return Failure(Noise);
 		}
+		
 		var pathSegments = path.split('/');
 		var uriSegments = uri.split('/');
-		if (pathSegments.length != uriSegments.length)
+		if (path.indexOf(Path.ASTERISK) == -1 && pathSegments.length != uriSegments.length)
 			return Failure(Noise);
-		var i = 0;
-		var params: DynamicAccess<Dynamic> = {};
-		for (segment in uriSegments) {
-			if (pathSegments[i].charAt(0) == Path.IDENTIFIER) {
-				var name = pathSegments[i].substr(1), 
-					value = segment,
-					type = types.find(function(type) return type.name == name);
-				if (type != null) {
-					switch (filter(value, type.type)) {
-						case Success(v): params.set(name, v);
-						default: return Failure(Noise);
-					}
-				}
-				continue;
+		
+		// create regex - todo: cleanup
+		var vars = [];
+		var pattern = pathSegments.map(function(segment) {
+			return switch segment.charAt(0) {
+				case Path.IDENTIFIER:
+					vars.push(segment.substr(1));
+					"\\/([^\\\\/]+?)";
+				case Path.ASTERISK:
+					vars.push(segment.substr(1));
+					"(?:\\/([^\\\\/]+?(?:\\/[^\\\\/]+?)*))?";
+				default:
+					"[]{}\\^$.|?+()".split('').map(function(special) {
+						segment = segment.split(special).join("\\"+special);
+					});
+					"\\/"+segment;
 			}
-			if (segment != pathSegments[i]) return Failure(Noise);
-			i++;
+		}).join('');
+		pattern = "^" + pattern + "(?:\\/(?=$))?$";
+		var regex = new EReg(pattern, 'i');
+		
+		switch regex.match('/'+uri) {
+			case true:
+				var params: DynamicAccess<Dynamic> = {},
+					i = 0;
+				for (name in vars) {
+					var value = regex.matched(i+1),
+						type = types.find(function(type) return type.name == name);
+					if (type != null && name != '') {
+						switch (filter(value, type.type)) {
+							case Success(v): 
+								params.set(name, v);
+							default: 
+								return Failure(Noise);
+						}
+					}
+					i++;
+				}
+				return Success(params);
+			default:
+				return Failure(Noise);
 		}
-		return Success(params);
 	}
 	
 	function filter(value: String, type: String): Outcome<Dynamic, Noise>

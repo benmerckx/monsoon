@@ -8,4 +8,5 @@ package monsoon;
   var Patch = "patch";
   var Post = "post";
   var Put = "put";
+  var All = "all";
 }

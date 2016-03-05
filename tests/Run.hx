@@ -4,13 +4,15 @@ import monsoon.middleware.Body;
 using Monsoon;
 
 class Run {
+	
+	inline static var target = #if cpp 'cpp' #elseif neko 'neko' #elseif nodejs 'nodejs' #else '' #end;
 
 	public static function main() {
 		var app = new Monsoon();
 		
 		app.route('/', function(req: Request, res: Response) res.send('ok'));
 		
-		app.routes([
+		app.route([
 			'/arg/:arg' => testArgumentInt,
 			'/arg/:arg' => testArgumentString,
 			'/hello' => function(req, res) res.send('world'),
@@ -21,7 +23,7 @@ class Run {
 		app.listen(port);
 		
 		#if (embed || nodejs)
-		Sys.print(target()+' listening on '+port);
+		Sys.print(target+' listening on '+port);
 		#end
 	}
 	
@@ -33,18 +35,4 @@ class Run {
 		
 	static function testMiddleware(req: Request, res: Response, body: Body)
 		res.json({body: Std.string(body)});
-		
-	static function target() 
-		return
-			#if cpp
-			'cpp'
-			#elseif neko
-			'neko'
-			#elseif nodejs
-			'nodejs'
-			#else
-			''
-			#end
-		;
-	
 }

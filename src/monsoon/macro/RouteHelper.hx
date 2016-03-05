@@ -20,53 +20,57 @@ typedef Arg = {
 }
 
 class AppHelper {
-	macro public static function route<A>(app: ExprOf<Monsoon>, path: ExprOf<A>, callback: ExprOf<Function>)
+	macro public static function route(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
 		return RouteHelper.addRoute(macro $app.router, path, callback);
-}
-
-class RouteMapHelper {
-	macro public static function routes<A, B>(app: ExprOf<Monsoon>, map: ExprOf<Map<A, B>>)
-		return switch map.expr {
-			case ExprDef.EArrayDecl(values):
-				macro $b{values.map(routeFromBinOp.bind(macro $app.router))};
-			default:
-				Context.error('Map must be of type EArrayDecl', map.pos);
-		}
-	
-	#if macro
-	
-	static function routeFromBinOp(router: Expr, e: Expr)
-		return switch e.expr {
-			case ExprDef.EBinop(OpArrow, e1, e2):
-				RouteHelper.addRoute(router, e1, e2);
-			default: 
-				Context.error('Routes must be defined with =>', e.pos);
-		}
-	
-	#end
 }
 
 class RouteHelper {
 	
-	macro public static function route<A, B>(router: ExprOf<Router>, path: Expr, callback: Expr)
+	macro public static function route<A, B>(router: ExprOf<Router>, path: Expr, ?callback: Expr)
 		return RouteHelper.addRoute(router, path, callback);
 	
 	#if macro
 	
-	public static function addRoute<A, B>(router: Expr, path: Expr, callback: Expr) {
+	public static function addRoute<A, B>(router: Expr, path: Expr, callback: Expr): Expr {
+		switch callback {
+			case macro null:
+				switch path.expr {
+					case ExprDef.EArrayDecl(values):
+						return macro $b{values.map(routeFromBinOp.bind(router))};
+					default:
+						callback = path;
+						path = macro '*';
+				}
+			default:
+		}
 		var type = Context.typeExpr(callback),
 			args: Array<Arg>,
 			state = ComplexType.TAnonymous([]),
-			middleware = [];
+			middleware = [],
+			isMiddleware = false;
 			
 		switch type.expr {
 			// middleware/controller
 			case TypedExprDef.TTypeExpr(module):
 				switch module {
-					case ModuleType.TClassDecl(c):
-						callback = macro function(req, res) {
-							
+					case ModuleType.TClassDecl(_.get() => c):
+						var middlewareType = {
+							name: c.module == null ? c.name : c.module,
+							pack: c.pack,
+							params: c.params.map(function(param: TypeParameter) 
+								return TPType(TypeTools.toComplexType(param.t))
+							),
+							sub: c.module == null ? null : c.name
 						};
+						callback = macro @:pos(callback.pos) function(req: Request, res: Response, info: monsoon.middleware.Route<tink.core.Any>) {
+							var router = new monsoon.Router($router, info.path);
+							new $middlewareType(router);
+							router.passThrough(req, res).handle(function(success)
+								if (!success) req.next()
+							);
+						};
+						type = Context.typeExpr(callback);
+						isMiddleware = true;
 					default:
 				}
 			default:
@@ -99,7 +103,7 @@ class RouteHelper {
 		
 		var calls: Array<Expr> = [macro @:pos(callback.pos) cast request, macro @:pos(callback.pos) response];
 		
-		// middleware
+		// inject middleware
 		if (args.length > 0) {
 			middleware = args.map(function(arg) {
 				var type = TypeTools.toComplexType(Context.follow(arg.t));
@@ -123,9 +127,18 @@ class RouteHelper {
 			},
 			types: $v{params},
 			middleware: $a{middleware},
-			matcher: monsoon.Router.DEFAULT_MATCHER
+			matcher: monsoon.Router.DEFAULT_MATCHER,
+			isMiddleware: $v{isMiddleware}
 		});
 	}
+	
+	static function routeFromBinOp(router: Expr, e: Expr)
+		return switch e.expr {
+			case ExprDef.EBinop(OpArrow, e1, e2):
+				RouteHelper.addRoute(router, e1, e2);
+			default: 
+				Context.error('Routes must be defined with =>', e.pos);
+		}
 	
 	static function argsFromTypedExpr(type: TypedExpr): Outcome<Array<Arg>, String>
 		return switch type.expr {

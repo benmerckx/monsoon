@@ -23,7 +23,7 @@ class Body {
 	var body: String = '';
 	
 	public function new(router: Router) {
-		router.route('*', process);
+		router.route(process);
 	}
 	
 	@:access(monsoon.RequestAbstr)

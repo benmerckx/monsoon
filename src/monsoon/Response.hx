@@ -24,17 +24,22 @@ typedef CookieOptions = {
 @:keep
 class Response {
 	
-	@:allow(monsoon.Monsoon)
-	var done(default, null) = Future.trigger();
+	public var done(default, null) = Future.trigger();
+	public var headers(default, null): Map<String, String>;
+	var cookies: Array<Cookie>;
+	var code: Int;
 	
-	public var headers(default, null): Map<String, String> = new Map();
-	var cookies: Array<Cookie> = [];
-	var code = 200;
-	
-	public function new () {}
+	public function new () clear();
 	
 	public function status(code: Int) {
 		this.code = code;
+		return this;
+	}
+	
+	public function clear() {
+		headers = new Map();
+		cookies = [];
+		code = 200;
 		return this;
 	}
 	
