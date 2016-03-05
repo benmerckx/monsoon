@@ -48,7 +48,7 @@ function functionName(fun) {
 
 function setup(port) {
 	todo++
-	return hippie().base('http://0.0.0.0:'+port)
+	return hippie().base('http://0.0.0.0:'+port).timeout(600)
 }
 
 var tests = [

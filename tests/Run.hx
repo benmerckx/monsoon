@@ -9,9 +9,13 @@ class Run {
 		var app = new Monsoon();
 		
 		app.route('/', function(req: Request, res: Response) res.send('ok'));
-		app.route('/arg/:arg', testArgumentInt);
-		app.route('/arg/:arg', testArgumentString);
-		app.route(Post('/post'), testMiddleware);
+		
+		app.routes([
+			'/arg/:arg' => testArgumentInt,
+			'/arg/:arg' => testArgumentString,
+			'/hello' => function(req, res) res.send('world'),
+			Post('/post') => testMiddleware
+		]);
 		
 		var port = #if (sys || nodejs) Sys.args().length > 0 ? Std.parseInt(Sys.args()[0]) : 80 #else 80 #end;
 		app.listen(port);

@@ -5,6 +5,25 @@ import tink.http.Request.IncomingRequest;
 import tink.http.KeyValue;
 using tink.CoreApi;
 
+class MiddlewareCollection {
+	var collection: Array<Middleware>;
+	
+	@:generic
+	public function get<T: Middleware>(type: Class<T>): T {
+		for (mw in collection) {
+			if (Std.is(mw, type)) {
+				return cast mw;
+			}
+		}
+		return null;
+	}
+	
+	public function set<T: Middleware>(instance: T): T {
+		collection.push(instance);
+		return instance;
+	}
+}
+
 @:keep
 @:allow(monsoon.Monsoon)
 class RequestAbstr<T> {

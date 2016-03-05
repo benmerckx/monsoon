@@ -3,6 +3,8 @@ package monsoon.middleware;
 import monsoon.Response;
 import monsoon.Middleware;
 import monsoon.Request;
+import monsoon.Monsoon;
+import monsoon.Router;
 import tink.io.Source;
 import tink.http.KeyValue;
 import tink.io.Sink;
@@ -13,30 +15,28 @@ import tink.io.Worker;
 import tink.RunLoop;
 #end
 
+using Monsoon;
 using tink.CoreApi;
 
-class Body extends Middleware {
+class Body {
 	var source: Source;
 	var body: String = '';
 	
+	public function new(router: Router) {
+		router.route('*', process);
+	}
+	
 	@:access(monsoon.RequestAbstr)
-	override public function process(request: Request, response: Response) {
+	function process(request: Request, response: Response) {
 		source = request.request.body;
 		
 		#if (embed && neko)
 		// This checks for LimitedSource vd StdSource, otherwise this fails if there's no post data - todo: find a proper way to check
 		if (!Reflect.hasField(source, 'surplus')) {
-			done.trigger(true);
+			request.next();
 			return;
 		}
 		#end
-		
-		/*#if ((!embed && neko) || php)
-		body = #if neko neko #elseif php php #end.Web.getPostData();
-		if (body == null) body = '';
-		done.trigger(true);
-		return;
-		#end*/
 		
 		#if embed RunLoop.current.work(function () { #end
 			var buf = new BytesOutput();
@@ -45,8 +45,8 @@ class Body extends Middleware {
 			.handle(function (x) switch x {
 				case AllWritten:
 					body = buf.getBytes().toString();
-					done.trigger(true);
-				default: done.trigger(true);
+					request.next();
+				default: request.next();
 			});
 		#if embed }); #end
 	}

@@ -6,10 +6,12 @@ import haxe.macro.ComplexTypeTools;
 import haxe.macro.TypeTools;
 import haxe.macro.Type;
 import tink.core.Outcome;
+import haxe.Constraints.Function;
 
 #if !macro
 import monsoon.Router;
 import monsoon.Monsoon;
+import monsoon.Middleware;
 #end
 
 typedef Arg = {
@@ -18,13 +20,35 @@ typedef Arg = {
 }
 
 class AppHelper {
-	macro public static function route<A, B>(app: ExprOf<Monsoon>, path: Expr, callback: Expr)
+	macro public static function route<A>(app: ExprOf<Monsoon>, path: ExprOf<A>, callback: ExprOf<Function>)
 		return RouteHelper.addRoute(macro $app.router, path, callback);
+}
+
+class RouteMapHelper {
+	macro public static function routes<A, B>(app: ExprOf<Monsoon>, map: ExprOf<Map<A, B>>)
+		return switch map.expr {
+			case ExprDef.EArrayDecl(values):
+				macro $b{values.map(routeFromBinOp.bind(macro $app.router))};
+			default:
+				Context.error('Map must be of type EArrayDecl', map.pos);
+		}
+	
+	#if macro
+	
+	static function routeFromBinOp(router: Expr, e: Expr)
+		return switch e.expr {
+			case ExprDef.EBinop(OpArrow, e1, e2):
+				RouteHelper.addRoute(router, e1, e2);
+			default: 
+				Context.error('Routes must be defined with =>', e.pos);
+		}
+	
+	#end
 }
 
 class RouteHelper {
 	
-	macro public static function route<A, B>(router: ExprOf<Router<A>>, path: Expr, callback: Expr)
+	macro public static function route<A, B>(router: ExprOf<Router>, path: Expr, callback: Expr)
 		return RouteHelper.addRoute(router, path, callback);
 	
 	#if macro
@@ -34,6 +58,19 @@ class RouteHelper {
 			args: Array<Arg>,
 			state = ComplexType.TAnonymous([]),
 			middleware = [];
+			
+		switch type.expr {
+			// middleware/controller
+			case TypedExprDef.TTypeExpr(module):
+				switch module {
+					case ModuleType.TClassDecl(c):
+						callback = macro function(req, res) {
+							
+						};
+					default:
+				}
+			default:
+		}
 			
 		switch argsFromTypedExpr(type) {
 			case Success(a): args = a;
@@ -69,7 +106,7 @@ class RouteHelper {
 				return switch type {
 					case TPath(path): macro {
 						name: $v{arg.name},
-						create: function() return new $path()
+						create: function(router) return new $path(router)
 					};
 					default:
 						Context.error('TPath expected for middleware type', callback.pos);
@@ -80,12 +117,13 @@ class RouteHelper {
 		}
 		
 		return macro $router.addRoute({
-			path: $path, 
+			path: monsoon.Router.DEFAULT_MATCHER.transformInput($path),
 			invoke: function(request, response, middleware) {
 				($callback)($a{calls});
 			},
 			types: $v{params},
-			middleware: $a{middleware}
+			middleware: $a{middleware},
+			matcher: monsoon.Router.DEFAULT_MATCHER
 		});
 	}
 	
@@ -96,7 +134,7 @@ class RouteHelper {
 			case TField(e, a):
 				switch type.t {
 					case TFun(a, _): Success(a);
-					default: 
+					default:
 						Failure('Callback must be a function');
 				}
 			default:

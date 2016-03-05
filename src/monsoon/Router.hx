@@ -8,7 +8,7 @@ using tink.CoreApi;
 
 typedef MiddlewareItem = {
 	name: String,
-	create: Void -> Dynamic
+	create: Router -> Dynamic
 }
 
 typedef Route<P> = {
@@ -16,30 +16,31 @@ typedef Route<P> = {
 	invoke: Request -> Response -> Array<Middleware> -> Void,
 	types: Array<ParamType>,
 	middleware: Array<MiddlewareItem>,
+	matcher: Matcher<P>,
 	?order: Int
 }
 
-class Router<P> {
+class Router {
 	
-	static var index: Int = 0;
-	var routes: List<Route<P>> = new List();
-	var matcher: Matcher<P>;
+	public static var DEFAULT_MATCHER(default, null) = new PathMatcher();
+	public var parent(default, null): Router;
+	var routes: List<Route<Any>> = new List();
+	var index = 0;
  
-	public function new(?matcher: Matcher<P>) {
-		this.matcher = matcher;
-	}
+	public function new(?parent: Router)
+		this.parent = parent;
 	
-	public function addRoute<T>(route: Route<P>) {
+	public function addRoute<P>(route: Route<P>) {
 		route.order = ++index;
-		routes.add(route);
+		routes.add(cast route);
 		return this;
 	}
 	
-	public function findRoute(request: Request, index: Int): Outcome<Pair<Route<P>, Any>, Noise> {
+	public function findRoute<P>(request: Request, index: Int): Outcome<Pair<Route<P>, Any>, Noise> {
 		for (route in routes) {
 			if (route.order <= index) continue;
-			switch (matcher.match(request, route.path, route.types)) {
-				case Success(params): return Success(new Pair(route, params));
+			switch (route.matcher.match(request, route.path, route.types)) {
+				case Success(params): return Success(new Pair(cast route, params));
 				default:
 			}
 		}

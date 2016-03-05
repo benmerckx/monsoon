@@ -1,6 +1,7 @@
 package monsoon;
 
 import haxe.DynamicAccess;
+import haxe.io.Path;
 
 using tink.CoreApi;
 using Lambda;
@@ -59,6 +60,10 @@ class PathAbstr {
 class PathMatcher implements Matcher<Path> {
 
 	public function new() {}
+	
+	public function transformInput(input: Path): Path {
+		return input;
+	}
 	
 	public function match(request: Request<Dynamic>, input: Path, types: Array<ParamType>): Outcome<Dynamic, Noise> {
 		if (input.method != 'all' && request.method != input.method) 
