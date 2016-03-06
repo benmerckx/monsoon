@@ -42,7 +42,7 @@ haxelib install monsoon-embed
 
 ### Usage
 
-It is recommended to import the Monsoon classes with `using Monsoon;` at the top of your module. All routing methods are implemented as macros and will not propery function without `using`.
+It is recommended to import the Monsoon classes with `using Monsoon;` at the top of your module. All routing methods are implemented as macros and will not properly function without `using`.
 
 # Routing
 
@@ -171,7 +171,7 @@ app.route([
 	'/blog' => Blog
 ]);
 
-// This will server /blog as index and /blog/item-title as detail
+// This will serve /blog as index and /blog/item-title as detail
 ```
 
 
@@ -186,7 +186,7 @@ class Request<T> {
     // Path only, stripped of query (eg. /page)
 	var path: String;
     // The http request method (see monsoon.Method)
-	var method: Method
+	var method: Method;
     // The hostname if it was set in the request headers
 	var hostname: Null<String>;
     // IP of the client that made the request
