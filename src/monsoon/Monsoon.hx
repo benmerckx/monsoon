@@ -31,16 +31,19 @@ class Monsoon {
 		
 	function serve(incoming: IncomingRequest) {
 		var request = new Request(incoming),
-			response = new Response();
+			response = new Response(),
+			trigger = Future.trigger();
 		
 		router.passThrough(request, response).handle(function(success) {
 			if (!success)
-				response.clear().status(404).send(
-					'404 request: '+Std.string(request)
-				);
+				response.error(404, '404 Not found');
 		});
 		
-		return response.done.asFuture();
+		response.done.asFuture().handle(function(_) {
+			trigger.trigger(response.tinkResponse());
+		});
+		
+		return trigger.asFuture();
 	}
 	
 	public function listen(port: Int = 80) {

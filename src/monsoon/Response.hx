@@ -1,11 +1,12 @@
 package monsoon;
 
 import haxe.Json;
-import tink.core.Future;
 import tink.http.Response;
 import tink.http.Header.HeaderField;
 import tink.io.IdealSource;
 import sys.io.File;
+
+using tink.CoreApi;
 
 typedef Cookie = {
 	name: String,
@@ -28,6 +29,7 @@ class Response {
 	public var headers(default, null): Map<String, String>;
 	var cookies: Array<Cookie>;
 	var code: Int;
+	var output: String = '';
 	
 	public function new () clear();
 	
@@ -54,29 +56,39 @@ class Response {
 	}
 	
 	public function json(output: Dynamic, ?space) {
-		headers.set('Content-Type', 'application/json');
+		headers.set('content-type', 'application/json');
 		send(Json.stringify(output, null, space));
 	}
 		
-	public function redirect(code: Int = 302, url: String) {
+	public function redirect(code = 302, url: String) {
 		this.code = code;
 		headers = ['Location' => url];
 		end();
 	}
 	
+	public function error(code = 500, message: String) {
+		clear()
+		.set('content-type', 'text/plain; charset=utf-8')
+		.status(code)
+		.send(message);
+	}
+	
 	public function set(key: String, value: String) {
-		headers.set(key, value);
+		headers.set(key.toLowerCase(), value);
 		return this;
+	}
+	
+	public function get(key: String) {
+		return headers.get(key);
 	}
 	
 	public function end()
 		send(null);
 		
-	public function send(output: String)
-		done.trigger(new OutgoingResponse(
-			new ResponseHeader(code, code > 400 ? 'OK' : 'ERROR', tinkHeaders()),
-			output
-		));
+	public function send(output: String) {
+		this.output = output;
+		done.trigger(Noise);
+	}
 		
 	function encodeCookie(cookie: Cookie) {
 		var buffer = StringTools.urlEncode(cookie.name)+'='+StringTools.urlEncode(cookie.value);
@@ -100,4 +112,10 @@ class Response {
 			new HeaderField(key, headers.get(key))
 		].concat(cookies.map(encodeCookie));
 	
+	@:allow(monsoon.Monsoon)
+	function tinkResponse() 
+		return new OutgoingResponse(
+			new ResponseHeader(code, code > 400 ? 'OK' : 'ERROR', tinkHeaders()),
+			output
+		);
 }

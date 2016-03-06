@@ -126,7 +126,7 @@ class Router {
 					processNext(middleware);
 				} catch (e: Dynamic) {
 					var stack = CallStack.exceptionStack();
-					response.clear().status(500).send(
+					response.error(
 						'Internal server error\n\n' +
 						'Uncaught exception: ' + Std.string(e) + "\n" +
 						CallStack.toString(stack)

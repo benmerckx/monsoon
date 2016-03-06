@@ -54,13 +54,15 @@ class RouteHelper {
 			case TypedExprDef.TTypeExpr(module):
 				switch module {
 					case ModuleType.TClassDecl(_.get() => c):
+						var module = c.module.split('.').pop();
+						if (module == c.name) module = null;
 						var middlewareType = {
-							name: c.module == null ? c.name : c.module,
+							name: module == null ? c.name : module,
 							pack: c.pack,
 							params: c.params.map(function(param: TypeParameter) 
 								return TPType(TypeTools.toComplexType(param.t))
 							),
-							sub: c.module == null ? null : c.name
+							sub: module == null ? null : c.name
 						};
 						callback = macro @:pos(callback.pos) function(req: Request, res: Response, info: monsoon.middleware.Route<tink.core.Any>) {
 							var router = new monsoon.Router($router, info.path);
