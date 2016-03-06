@@ -136,7 +136,7 @@ Parses the request body to string. The resulting instance has a `toString()` met
 
 The Console is a debugging tool which will bundle any traces created during the processing of the request and send them with your response to the browser. They are packaged as a single `<script>` tag and log to the console on the client side.
 
-[[https://github.com/benmerckx/monsoon/blob/master/docs/console.png]]
+![Console](https://github.com/benmerckx/monsoon/blob/master/docs/console.png?raw=true "")
 
 ### Writing your own
 
