@@ -46,12 +46,7 @@ class Response {
 	}
 	
 	public function cookie(name: String, value: String, ?options: CookieOptions) {
-		#if (!embed && neko)
-		// Neko does not set multiple headers of the same name, so we must use setCookie instead of pushing a header in the response
-		neko.Web.setCookie(name, value, options.expires, options.domain, options.path, options.secure, options.httpOnly);
-		#else
 		cookies.push({name: name, value: value, options: options});
-		#end
 		return this;
 	}
 	
@@ -103,19 +98,40 @@ class Response {
 				buffer += "; secure";
 			if (cookie.options.httpOnly != null && cookie.options.httpOnly)
 				buffer += "; HttpOnly";
+		} else {
+			buffer += ";";
 		}
 		return new HeaderField('Set-Cookie', buffer);
 	}
+	
+	#if (!embed && neko)
+	function nekoCookie(cookie: Cookie) {
+		// Neko does not set multiple headers of the same name, so we must use setCookie instead of pushing a header in the response
+		var options: CookieOptions = {expires: null, domain: null, path: null, secure: null, httpOnly: null};
+		if (cookie.options != null)
+			for (option in Reflect.fields(cookie.options))
+				Reflect.setField(options, option, Reflect.field(cookie.options, option));
+		neko.Web.setCookie(cookie.name, cookie.value, options.expires, options.domain, options.path, options.secure, options.httpOnly);
+	}
+	#end
 		
-	function tinkHeaders()
+	function tinkHeaders() {
+		var cookies = [];
+		#if (!embed && neko)
+		this.cookies.map(nekoCookie);
+		#else
+		cookies = this.cookies.map(encodeCookie);
+		#end
 		return [for (key in headers.keys())
 			new HeaderField(key, headers.get(key))
-		].concat(cookies.map(encodeCookie));
+		].concat(cookies);
+	}
 	
 	@:allow(monsoon.Monsoon)
-	function tinkResponse() 
+	function tinkResponse()
 		return new OutgoingResponse(
 			new ResponseHeader(code, code > 400 ? 'OK' : 'ERROR', tinkHeaders()),
 			output
 		);
+		
 }

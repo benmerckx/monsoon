@@ -3,39 +3,21 @@ package monsoon;
 import haxe.DynamicAccess;
 import haxe.io.Path;
 import monsoon.Matcher;
+import monsoon.Router.Route;
 
 using tink.CoreApi;
 using Lambda;
 using StringTools;
 using haxe.EnumTools.EnumValueTools;
 
-enum MethodPath {
-	All(path: String);
-	Delete(path: String);
-	Get(path: String);
-	Head(path: String);
-	Options(path: String);
-	Patch(path: String);
-	Post(path: String);
-	Put(path: String);
-}
-
 @:forward
-abstract Path(PathAbstr) {
+abstract Path(String) from String to String {
 	
 	public static inline var IDENTIFIER = ':';
 	public static inline var ASTERISK = '*';
 	
-	public inline function new(path, method)
-		this = new PathAbstr(path, method);
-	
-	@:from
-	static public function fromString(s:String) 
-		return new Path(s, Method.All);
-		
-	@:from
-	static public function fromMethod(method: MethodPath)
-		return new Path(method.getParameters()[0], method.getName().toLowerCase());
+	public inline function new(path)
+		this = path;
 		
 	public static function format(path: String) {
 		path = path.replace('//', '/');
@@ -47,18 +29,6 @@ abstract Path(PathAbstr) {
 	}
 }
 
-class PathAbstr {
-	
-	public var path(default, null): String;
-	public var method(default, null): Method;
-	
-	public function new(path, method) {
-		this.path = path;
-		this.method = method;
-	}
-	
-}
-
 class PathMatcher implements Matcher<Path> {
 
 	public function new() {}
@@ -67,18 +37,19 @@ class PathMatcher implements Matcher<Path> {
 		return input;
 	}
 	
-	public function match(prefix: Array<Any>, request: Request<Dynamic>, input: Path, types: Array<ParamType>, isMiddleware): Outcome<Dynamic, Noise> {
-		if (input.method != Method.All && request.method != input.method) 
+	public function match(prefix: Array<Any>, request: Request<Dynamic>, route: Route<Path>): Outcome<Dynamic, Noise> {			
+		if (route.method != Method.All && request.method != route.method) 
 			return Failure(Noise);
 			
-		var path = Path.format(input.path),
-			uri = Path.format(request.path);
+		var path = Path.format(route.path),
+			uri = Path.format(request.path),
+			types = route.types;
 			
 		for (p in prefix)
-			if (Std.is(p, PathAbstr))
-				path = (cast p).path + '/' + path;
+			if (Std.is(p, String)) // Todo: this should check for Path once different matchers are allowed
+				path = p + '/' + path;
 				
-		if (isMiddleware)
+		if (route.isMiddleware)
 			path += '/*';
 		path = Path.format(path);
 			

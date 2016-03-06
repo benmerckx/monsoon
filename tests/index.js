@@ -63,6 +63,15 @@ var tests = [
 	},
 	function testMiddleware(api) {
 		return api.post('/post').send('postbody').expectBody(JSON.stringify({body: 'postbody'}))
+	},
+	function testCookie(api) {
+		return api.get('/cookie').expectHeader('set-cookie', ['name=value;'])
+	},
+	function testController(api) {
+		return api.json().get('/controller').expectBody({route: 'controller_index'})
+	},
+	function testControllerPath(api) {
+		return api.json().get('/controller/path').expectBody({route: 'controller_path'})
 	}
 ]
 
@@ -70,16 +79,16 @@ targets.map(function (target, index) {
 	
 	(function(port) {
 		var child = target.process(port).on('error', console.log)
+		child.stderr.on('data', logProgress)
+		if (target.name != 'mod_neko')
+			child.stdout.on('data', logProgress)
+
 		setTimeout(function() {
 			var start = time(), 
 				todo = 0, 
 				done = 0, 
 				failed = 0
-
-			child.stderr.on('data', logProgress)
-			if (target.name != 'mod_neko')
-				child.stdout.on('data', logProgress)
-
+				
 			tests.map(function (f) {
 				todo++
 				setTimeout(function() {

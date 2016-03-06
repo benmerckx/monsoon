@@ -14,8 +14,6 @@ interface Matcher<P> {
 	public function match(
 		prefixes: Array<Any>, 
 		request: Request<Dynamic>, 
-		path: P, 
-		types: Array<ParamType>,
-		isMiddleware: Bool
+		route: Route<P>
 	): Outcome<Dynamic, Noise>;
 }

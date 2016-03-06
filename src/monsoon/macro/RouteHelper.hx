@@ -7,6 +7,7 @@ import haxe.macro.TypeTools;
 import haxe.macro.Type;
 import tink.core.Outcome;
 import haxe.Constraints.Function;
+import monsoon.Method;
 
 #if !macro
 import monsoon.Router;
@@ -21,22 +22,64 @@ typedef Arg = {
 
 class AppHelper {
 	macro public static function route(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
-		return RouteHelper.addRoute(macro $app.router, path, callback);
+		return RouteHelper.addRoute(Method.All, macro $app.router, path, callback);
+	
+	macro public static function delete(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Delete, macro $app.router, path, callback);
+
+	macro public static function get(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Get, macro $app.router, path, callback);	
+	
+	macro public static function head(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Head, macro $app.router, path, callback);
+
+	macro public static function options(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Options, macro $app.router, path, callback);	
+
+	macro public static function patch(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Patch, macro $app.router, path, callback);	
+
+	macro public static function post(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Post, macro $app.router, path, callback);	
+	
+	macro public static function put(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Put, macro $app.router, path, callback);
 }
 
 class RouteHelper {
 	
-	macro public static function route<A, B>(router: ExprOf<Router>, path: Expr, ?callback: Expr)
-		return RouteHelper.addRoute(router, path, callback);
+	macro public static function route(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.All, router, path, callback);
+		
+	macro public static function delete(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Delete, router, path, callback);
+
+	macro public static function get(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Get, router, path, callback);	
+	
+	macro public static function head(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Head, router, path, callback);
+
+	macro public static function options(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Options, router, path, callback);	
+
+	macro public static function patch(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Patch, router, path, callback);	
+
+	macro public static function post(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Post, router, path, callback);	
+	
+	macro public static function put(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.Put, router, path, callback);
 	
 	#if macro
 	
-	public static function addRoute<A, B>(router: Expr, path: Expr, callback: Expr): Expr {
+	public static function addRoute<A, B>(method: Method, router: Expr, path: Expr, callback: Expr): Expr {
 		switch callback {
 			case macro null:
 				switch path.expr {
 					case ExprDef.EArrayDecl(values):
-						return macro $b{values.map(routeFromBinOp.bind(router))};
+						return macro $b{values.map(routeFromBinOp.bind(method, router))};
 					default:
 						callback = path;
 						path = macro '*';
@@ -130,14 +173,15 @@ class RouteHelper {
 			types: $v{params},
 			middleware: $a{middleware},
 			matcher: monsoon.Router.DEFAULT_MATCHER,
-			isMiddleware: $v{isMiddleware}
+			isMiddleware: $v{isMiddleware},
+			method: $v{method}
 		});
 	}
 	
-	static function routeFromBinOp(router: Expr, e: Expr)
+	static function routeFromBinOp(method: Method, router: Expr, e: Expr)
 		return switch e.expr {
 			case ExprDef.EBinop(OpArrow, e1, e2):
-				RouteHelper.addRoute(router, e1, e2);
+				RouteHelper.addRoute(method, router, e1, e2);
 			default: 
 				Context.error('Routes must be defined with =>', e.pos);
 		}

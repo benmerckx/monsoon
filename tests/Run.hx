@@ -3,6 +3,13 @@ import monsoon.middleware.Body;
 
 using Monsoon;
 
+class Controller {
+	public function new(router: Router) {
+		router.get('/', function(req: Request, res: Response) res.json({route: 'controller_index'}));
+		router.get('/path', function(req: Request, res: Response) res.json({route: 'controller_path'}));
+	}
+}
+
 class Run {
 	
 	inline static var target = #if cpp 'cpp' #elseif neko 'neko' #elseif nodejs 'nodejs' #else '' #end;
@@ -12,11 +19,15 @@ class Run {
 		
 		app.route('/', function(req: Request, res: Response) res.send('ok'));
 		
-		app.route([
+		app.get([
+			'/controller' => Controller,
 			'/arg/:arg' => testArgumentInt,
 			'/arg/:arg' => testArgumentString,
-			'/hello' => function(req, res) res.send('world'),
-			Post('/post') => testMiddleware
+			'/cookie' => function(req: Request, res: Response) res.cookie('name', 'value').send('ok')
+		]);
+		
+		app.post([
+			'/post' => testMiddleware
 		]);
 		
 		var port = #if (sys || nodejs) Sys.args().length > 0 ? Std.parseInt(Sys.args()[0]) : 80 #else 80 #end;

@@ -20,6 +20,7 @@ typedef Route<P> = {
 	middleware: Array<MiddlewareItem>,
 	matcher: Matcher<P>,
 	isMiddleware: Bool,
+	method: Method,
 	?order: Int
 }
 
@@ -50,7 +51,7 @@ class Router {
 				prefixes.push(p.prefix);
 				p = p.parent;
 			}
-			switch route.matcher.match(prefixes, request, route.path, route.types, route.isMiddleware) {
+			switch route.matcher.match(prefixes, request, route) {
 				case Success(params): 
 					return Success(new Pair(cast route, params));
 				default:
