@@ -1,7 +1,8 @@
 *.n
 bin
+node_modules
 /Forever.hx
 /Main.hx
 /build.hxml
 /docker-compose.yml
-node_modules
+/build

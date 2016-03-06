@@ -24,7 +24,7 @@ class Main {
 ### Default
 
 Monsoon runs on platforms that provide their own http implementation.  
-Runs on: `nodejs`, `php`, `neko` *(mod_neko, mod_tora)*, 
+Runs on: `nodejs`, `php`, `neko` *(mod_neko, mod_tora)*
 ```
 haxelib install monsoon
 ```
@@ -64,7 +64,7 @@ app.route('/', function (req, res)
 );
 ```
 
-Multiple routes can be passed at once go by using map notation:
+Multiple routes can be passed at once by using map notation:
 
 ```haxe
 app.get([
@@ -77,14 +77,14 @@ app.get([
 
 #### Parameters
 
-A segment of the path can be matched by using a `:param`. To use the parameter later in your callback, it has to be typed in the type paramater of `Request<T>`.
+A segment of the path can be matched by using a `:param`. To use the parameter later in your callback, it has to be typed in the type parameter of `Request<T>`.
 ```haxe
 app.get('/blog/:item', function(req: Request<{item: String}>, res)
 	res.send('Blog item: '+req.params.item)
 );
 ```
 
-A parameter can be typed as `String`, `Int`, `Float` or `Bool`. The value will be parsed from the request's path, and the route is passed in case the type does not match. The following example will respond to `/blog/675`, but not for `/blog/string`.
+A parameter can be typed as `String`, `Int`, `Float` or `Bool`. The value will be parsed from the request's path, and the route is passed in case the type does not match. The following example will respond to `/blog/675`, but not to `/blog/string`.
 
 ```haxe
 app.get('/blog/:id', function(req: Request<{id: Int}>, res)
@@ -94,7 +94,7 @@ app.get('/blog/:id', function(req: Request<{id: Int}>, res)
 
 #### Splat
 
-Parameters using `:` will match anything seperated by slashes. You can match more by using an asterisk. The following example will match `/blog/a` and `/blog/a/b`. The param can remain unnamed if you don't intend on using it later (`/blog/*`).
+Parameters using `:` will match anything seperated by slashes. You can match more by using an asterisk. The following example will match `/blog/a` and `/blog/a/b`. The param can remain unnamed if you don't intend on using it later (eg. `/blog/*`).
 
 ```haxe
 app.get('/blog/*splat', function(req: Request<{splat: String}>, res)
@@ -111,7 +111,7 @@ Monsoon supports two methods for easily using middleware in your app. To demonst
 Middleware can used for all matching requests in the current router by passing the Class as a callback:
 
 ```haxe
-app.route(Console); // Is the same as app.post('*', Console);
+app.route(Console); // Is the same as app.route('*', Console);
 ```
 
 ### Inject
@@ -135,6 +135,8 @@ Parses the request body to string. The resulting instance has a `toString()` met
 #### Console
 
 The Console is a debugging tool which will bundle any traces created during the processing of the request and send them with your response to the browser. They are packaged as a single `<script>` tag and log to the console on the client side.
+
+[[https://github.com/benmerckx/monsoon/blob/master/docs/console.png]]
 
 ### Writing your own
 
