@@ -121,10 +121,7 @@ class RouteHelper {
 			default:
 		}
 			
-		switch argsFromTypedExpr(type) {
-			case Success(a): args = a;
-			case Failure(e): Context.error(e, callback.pos);
-		}
+		var args = argsFromTypedExpr(type);
 		
 		if (args.length < 2) 
 			Context.error('2 or more arguments expected', callback.pos);
@@ -185,19 +182,23 @@ class RouteHelper {
 			default: 
 				Context.error('Routes must be defined with =>', e.pos);
 		}
+		
+	static function defaultArgs(): Array<Arg>
+		return [
+			{name: 'request', t: ComplexTypeTools.toType(macro: monsoon.Request.RequestAbstr<{}>)},
+			{name: 'response', t: ComplexTypeTools.toType(macro: monsoon.Response)}
+		];
 	
-	static function argsFromTypedExpr(type: TypedExpr): Outcome<Array<Arg>, String>
+	static function argsFromTypedExpr(type: TypedExpr): Array<Arg>
 		return switch type.expr {
 			case TFunction(func):
-				Success(argsFromTFunc(func));
+				argsFromTFunc(func);
 			case TField(e, a):
 				switch type.t {
-					case TFun(a, _): Success(a);
-					default:
-						Failure('Callback must be a function');
+					case TFun(a, _): a;
+					default: defaultArgs();
 				}
-			default:
-				Failure('Callback must be a function');
+			default: defaultArgs();
 		}
 		
 	static function argsFromTFunc(f: TFunc): Array<Arg>

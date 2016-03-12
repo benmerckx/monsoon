@@ -1,6 +1,7 @@
 # common
 
 -lib tink_http
+-lib mime
 -cp ../src
 -main Run
 --each

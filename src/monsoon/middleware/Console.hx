@@ -2,6 +2,7 @@ package monsoon.middleware;
 
 import haxe.Json;
 import haxe.PosInfos;
+import monsoon.Response;
 using tink.CoreApi;
 using Monsoon;
 
@@ -16,18 +17,21 @@ class Console {
 	public function new(router: Router) {
 		defaultTrace = haxe.Log.trace;
 		haxe.Log.trace = function(v: Dynamic, ?info: PosInfos) logs.push(new Log(v, info));
-		router.route(function(req: Request, res: Response) {
-			res.done.asFuture().handle(function(_) {
+		router.route(function(request: Request, response: Response) {
+			response.done.asFuture().handle(function(_) {
 				// Only print logs if this an html response
-				var type = res.get('content-type');
+				var type = response.get('content-type');
 				if (type == null || type.indexOf('text/html') == -1) {
 					logs.map(function(log) defaultTrace(log.a, log.b));
 					return;
 				}
-					
-				res.output += '\n<script>'+logs.map(logLine).join('')+'</script>';
+				switch response.output {
+					case Output.String(s):
+						response.output = Output.String(s+'\n<script>'+logs.map(logLine).join('')+'</script>');
+					default:
+				}
 			});
-			req.next();
+			request.next();
 		});
 	}
 	

@@ -1,10 +1,12 @@
 package monsoon;
 
+import haxe.io.Bytes;
 import haxe.Json;
 import tink.http.Response;
 import tink.http.Header.HeaderField;
 import tink.io.IdealSource;
 import sys.io.File;
+import mime.Mime;
 
 using tink.CoreApi;
 
@@ -22,6 +24,11 @@ typedef CookieOptions = {
 	?secure: Bool,
 }
 
+enum Output {
+	String(s: String);
+	Bytes(b: Bytes);
+}
+
 @:keep
 class Response {
 	
@@ -29,7 +36,7 @@ class Response {
 	public var headers(default, null): Map<String, String>;
 	var cookies: Array<Cookie>;
 	var code: Int;
-	var output: String = '';
+	var output: Output = Output.String('');
 	
 	public function new () clear();
 	
@@ -57,7 +64,7 @@ class Response {
 		
 	public function redirect(code = 302, url: String) {
 		this.code = code;
-		headers = ['Location' => url];
+		headers = ['location' => url];
 		end();
 	}
 	
@@ -81,7 +88,22 @@ class Response {
 		send(null);
 		
 	public function send(output: String) {
-		this.output = output;
+		this.output = Output.String(output);
+		done.trigger(Noise);
+	}
+	
+	public function sendFile(path: String, ?contentType: String) {
+		if (contentType == null) {
+			var type = Mime.lookup(path);
+			if (type == null) 
+				type = 'application/octet-stream';
+			var info = Mime.db.get(type);
+			contentType = type;
+			if (info.charset != null)
+				contentType += '; charset='+info.charset.toLowerCase();
+		}
+		set('content-type', contentType);
+		this.output = Output.Bytes(File.getBytes(path));
 		done.trigger(Noise);
 	}
 		
@@ -101,7 +123,7 @@ class Response {
 		} else {
 			buffer += ";";
 		}
-		return new HeaderField('Set-Cookie', buffer);
+		return new HeaderField('set-cookie', buffer);
 	}
 	
 	#if (!embed && neko)
@@ -131,7 +153,10 @@ class Response {
 	function tinkResponse()
 		return new OutgoingResponse(
 			new ResponseHeader(code, code > 400 ? 'OK' : 'ERROR', tinkHeaders()),
-			output
+			switch output {
+				case Output.String(s): s;
+				case Output.Bytes(b): b;
+			}
 		);
 		
 }

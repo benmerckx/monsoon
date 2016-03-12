@@ -9,6 +9,7 @@
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
-  	"tink_http": ""
+  	"tink_http": "",
+	"mime": ""
   }
 }

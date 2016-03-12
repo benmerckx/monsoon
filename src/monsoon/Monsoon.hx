@@ -24,9 +24,7 @@ class Monsoon {
 	};
 
 	public function new(?options: AppOptions) {
-		if (options != null)
-			for (key in Reflect.fields(options))
-				Reflect.setField(this.options, key, Reflect.field(options, key));
+		concatOptions(this.options, options);
 	}
 		
 	function serve(incoming: IncomingRequest) {
@@ -117,6 +115,13 @@ class Monsoon {
 	#end
 	
 	#end
+	
+	public static function concatOptions<T>(a: T, b: Dynamic): T {
+		if (b != null)
+			for (key in Reflect.fields(b))
+				Reflect.setField(a, key, Reflect.field(b, key));
+		return a;
+	}
 	
 	#if display
 	public function route<P>(path: P, callback: Request -> Response -> Void) {}

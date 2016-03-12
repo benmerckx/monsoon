@@ -72,6 +72,11 @@ var tests = [
 	},
 	function testControllerPath(api) {
 		return api.json().get('/controller/path').expectBody({route: 'controller_path'})
+	},
+	function testStatic(api, target) {
+		if (['php', 'mod_neko'].indexOf(target) > -1)
+			return null
+		return api.get('/plain.txt').expectHeader('content-type', 'text/plain').expectBody('plain')
 	}
 ]
 
@@ -92,7 +97,12 @@ targets.map(function (target, index) {
 			tests.map(function (f) {
 				todo++
 				setTimeout(function() {
-					f(setup(port)).end(function(err, res, body) {
+					var test = f(setup(port), target.name)
+					if (test == null) {
+						todo--
+						return
+					}
+					test.end(function(err, res, body) {
 						if (err) {
 							failed++
 							console.log(target.name+' failed '+functionName(f)+': \n'+err)

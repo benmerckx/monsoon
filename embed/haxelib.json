@@ -4,13 +4,14 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Embedded webserver",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "releasenote": "Alpha",
   "contributors": ["benmerckx"],
   "dependencies": {
-	"tink_tcp": "",
-	"tink_runloop": "",
-	"tink_concurrent": "",
-  	"monsoon": ""
+    "tink_tcp": "",
+    "tink_runloop": "",
+    "tink_concurrent": "",
+    "tink_http": "",
+    "monsoon": ""
   }
 }

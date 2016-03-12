@@ -1,5 +1,7 @@
 package;
+
 import monsoon.middleware.Body;
+import monsoon.middleware.Static;
 
 using Monsoon;
 
@@ -16,6 +18,8 @@ class Run {
 
 	public static function main() {
 		var app = new Monsoon();
+		
+		app.route(Static.serve('public'));
 		
 		app.route('/', function(req: Request, res: Response) res.send('ok'));
 		
