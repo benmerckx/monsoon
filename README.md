@@ -225,6 +225,8 @@ class Response {
 	function end();
 	// End the response with given output
 	function send(output: String);
+	// End the response with the file's contents, content-type will be set automatically but can be set explicitly
+	function sendFile(path: String, ?contentType: String)
 }
 ```
 
