@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.0.1",
-  "releasenote": "Alpha",
+  "version": "0.0.2",
+  "releasenote": "Static middleware added",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {

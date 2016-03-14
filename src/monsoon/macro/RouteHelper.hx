@@ -91,7 +91,7 @@ class RouteHelper {
 			state = ComplexType.TAnonymous([]),
 			middleware = [],
 			isMiddleware = false;
-			
+		
 		switch type.expr {
 			// middleware/controller
 			case TypedExprDef.TTypeExpr(module):
@@ -119,6 +119,18 @@ class RouteHelper {
 					default:
 				}
 			default:
+				var mwInterface = ComplexTypeTools.toType(macro: monsoon.Middleware.ConfigurableMiddleware);
+				if (Context.unify(Context.typeof(callback), mwInterface)) {
+					callback = macro @:pos(callback.pos) function(req: Request, res: Response, info: monsoon.middleware.Route<tink.core.Any>) {
+						var router = new monsoon.Router($router, info.path);
+						($callback).setRouter(router);
+						router.passThrough(req, res).handle(function(success)
+							if (!success) req.next()
+						);
+					};
+					type = Context.typeExpr(callback);
+					isMiddleware = true;
+				}
 		}
 			
 		var args = argsFromTypedExpr(type);

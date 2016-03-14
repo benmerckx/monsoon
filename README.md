@@ -33,7 +33,6 @@ haxelib install monsoon
 ### Embedded
 
 A tcp webserver will be embedded into your application.  
-Static files can be served through a proxy (eg. nginx).  
 Runs on: `neko`, `cpp`
 ```
 haxelib install monsoon-embed
@@ -104,19 +103,14 @@ app.get('/blog/*splat', function(req: Request<{splat: String}>, res)
 
 # Middleware
 
-Monsoon supports two methods for easily using middleware in your app. To demonstrate this the following examples use `monsoon.middleware.Console` and `monsoon.middleware.Body`.
+### Bundled middleware
 
-### Globally
+Bundled middleware can be found in `monsoon.middleware`.
 
-Middleware can used for all matching requests in the current router by passing the Class as a callback:
+#### Body
 
-```haxe
-app.route(Console); // Is the same as app.route('*', Console);
-```
-
-### Inject
-
-Middleware can be injected into a route simply by adding it to the callback's arguments (recommended way of working with the body parser):
+Parses the request body to string. The resulting instance has a `toString()` method so you can use the body. A `toMap()` method is also supplied for parsing key value pairs (eg. form submission).   
+The middleware (and any other) can be injected into a route simply by adding it to the callback's arguments:
 
 ```haxe
 app.post('/submit', function(req, res, body: Body)
@@ -124,24 +118,38 @@ app.post('/submit', function(req, res, body: Body)
 );
 ```
 
-### Bundled middleware
+#### Static
 
-Bundled middleware can be found in `monsoon.middleware`.
+The static middleware can be used to serve static files (js, css, html etc.). It is recommended to use seperate software (nginx, varnish) to serve your static files but this can be used during development or on low traffic websites.
 
-#### Body
+If a file is found it will be served with the correct content-type. If no file is found the route is passed.
 
-Parses the request body to string. The resulting instance has a `toString()` method so you can use the body. A `toMap()` method is also supplied for parsing key value pairs (eg. form submission).
+```haxe
+// Any file in the public folder will be served
+app.route(Static.serve('public')); 
+// You can change the index files it looks for (default is index.html, index.htm)
+app.route(Static.serve('public', {index: ['index.txt', 'index.html']})); 
+// It can be prefixed like any other route
+app.route('/assets', Static.serve('public')); 
+```
 
 #### Console
 
-The Console is a debugging tool which will bundle any traces created during the processing of the request and send them with your response to the browser. They are packaged as a single `<script>` tag and log to the console on the client side.
+The Console is a debugging tool which will bundle any traces created during the processing of the request and send them with your response to the browser. They are packaged as a single `<script>` tag and log to the console on the client side.   
+Middleware can used for all matching requests in the current router by passing the Class as you would a callback:
+
+
+```haxe
+app.route(Console); // Is the same as app.route('*', Console);
+```
 
 ![Console](https://github.com/benmerckx/monsoon/blob/master/docs/console.png?raw=true "")
 
 ### Writing your own
 
-Middleware is defined as such:
+Middleware is defined as one of these forms:
 ```haxe
+interface ConfigurableMiddleware {public function setRouter(router: Router): Void;}
 typedef Middleware = {public function new(router: Router): Void;}
 ```
 

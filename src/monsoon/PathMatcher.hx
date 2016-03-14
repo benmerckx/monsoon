@@ -46,7 +46,7 @@ class PathMatcher implements Matcher<Path> {
 			types = route.types;
 			
 		for (p in prefix)
-			if (Std.is(p, String)) // Todo: this should check for Path once different matchers are allowed
+			if (Std.is(p, String) && p != '*') // Todo: this should check for Path once different matchers are allowed
 				path = p + '/' + path;
 				
 		if (route.isMiddleware)
