@@ -81,6 +81,11 @@ var tests = [
 		if (['php', 'mod_neko'].indexOf(target) > -1)
 			return null
 		return api.get('/public/plain.txt').expectHeader('content-type', 'text/plain').expectBody('plain')
+	},
+	function testStaticIndex(api, target) {
+		if (['php', 'mod_neko'].indexOf(target) > -1)
+			return null
+		return api.get('/public/').expectHeader('content-type', 'text/html').expectBody('index')
 	}
 ]
 

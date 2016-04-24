@@ -5,7 +5,7 @@ import haxe.Json;
 import tink.http.Response;
 import tink.http.Header.HeaderField;
 import tink.io.IdealSource;
-import sys.io.File;
+import asys.io.File;
 import mime.Mime;
 
 using tink.CoreApi;
@@ -103,8 +103,10 @@ class Response {
 				contentType += '; charset='+info.charset.toLowerCase();
 		}
 		set('content-type', contentType);
-		this.output = Output.Bytes(File.getBytes(path));
-		done.trigger(Noise);
+		File.getBytes(path).handle(function(res) {
+			this.output = Output.Bytes(res.sure());
+			done.trigger(Noise);
+		});
 	}
 		
 	function encodeCookie(cookie: Cookie) {

@@ -3,7 +3,7 @@ package monsoon.middleware;
 import monsoon.Method;
 import monsoon.Middleware.ConfigurableMiddleware;
 import monsoon.Router;
-import sys.FileSystem;
+import asys.FileSystem;
 import haxe.io.Path;
 
 using Monsoon;
@@ -30,27 +30,39 @@ class Static implements ConfigurableMiddleware {
 	
 	function process(request: Request<{path: String}>, response: Response) {
 		var path = Path.join([directory, request.params.path]);
-		if (request.method != Method.Get || !FileSystem.exists(path)) {
+		if (request.method != Method.Get) {
 			request.next();
 			return;
 		}
-		if (FileSystem.isDirectory(path)) {
-			// check for index
-			var found = false;
-			for (file in options.index) {
-				var location = Path.join([path, file]);
-				if (FileSystem.exists(location)) {
-					path = location;
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
+		FileSystem.exists(path).handle(function(exists) {
+			if (!exists) {
 				request.next();
-				return;
+			} else {
+				FileSystem.isDirectory(path).handle(function(isDir) {
+					if (isDir) {
+						var index = options.index;
+						function tryNext() {
+							if (index.length == 0) {
+								request.next();
+								return;
+							}
+							var file = index.shift();
+							var location = Path.join([path, file]);
+							FileSystem.exists(location).handle(function(exists) {
+								if (exists) {
+									response.sendFile(location);
+								} else {
+									tryNext();
+								}
+							});
+						}
+						tryNext();
+					} else {
+						response.sendFile(path);
+					}
+				});
 			}
-		}
-		response.sendFile(path);
+		});
 	}
 	
 	public static function serve(directory: String, ?options: StaticOptions) {

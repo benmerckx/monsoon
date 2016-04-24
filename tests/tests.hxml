@@ -3,8 +3,7 @@
 -lib tink_http
 -lib tink_io
 -lib mime
-#-cp ../../mime-db
-#--macro mime.Mime.init()
+-lib asys
 -cp ../src
 -main Run
 --each
