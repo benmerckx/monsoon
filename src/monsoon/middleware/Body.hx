@@ -6,7 +6,6 @@ import monsoon.Request;
 import monsoon.Monsoon;
 import monsoon.Router;
 import tink.io.Source;
-import tink.http.KeyValue;
 import tink.io.Sink;
 import haxe.io.BytesOutput;
 import tink.io.Worker;
@@ -51,11 +50,14 @@ class Body {
 		#if embed }); #end
 	}
 	
-	public function toMap(): Map<String, String>
-		return [
-			for (p in KeyValue.parse(body))
-				StringTools.urlDecode(p.a) => (p.b == null ? null : StringTools.urlDecode(p.b))
-		];
+	public function toMap(): Map<String, String> {
+		var response = new Map();
+		for (part in body.split('&')) {
+			var value = part.split('=');
+			response.set(StringTools.urlDecode(value[0]), value.length > 1 ? StringTools.urlDecode(value[1]) : null);
+		}
+		return response;
+	}
 	
 	public function toString() 
 		return body;

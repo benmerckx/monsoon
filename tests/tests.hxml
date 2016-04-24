@@ -1,7 +1,10 @@
 # common
 
 -lib tink_http
+-lib tink_io
 -lib mime
+#-cp ../../mime-db
+#--macro mime.Mime.init()
 -cp ../src
 -main Run
 --each
@@ -15,6 +18,17 @@
 -D embed
 -neko bin/neko/index.n
 
+# java
+
+--next
+-lib hxjava
+-lib tink_tcp
+-lib tink_runloop
+-lib tink_concurrent
+-D concurrent
+-D embed
+-java bin/java/
+
 # cpp
 
 --next
@@ -24,7 +38,7 @@
 -D concurrent
 -D embed
 -cpp bin/cpp/
-
+ 
 # mod_neko
 
 --next

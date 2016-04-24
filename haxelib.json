@@ -4,12 +4,13 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.0.2",
-  "releasenote": "Static middleware added",
+  "version": "0.0.4",
+  "releasenote": "Java support / use tink_url",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
-  	"tink_http": "",
-	"mime": ""
+	"tink_url": "0.2.0",
+  	"tink_http": "0.0.3",
+	"mime": "0.0.1"
   }
 }

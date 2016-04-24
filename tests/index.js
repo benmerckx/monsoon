@@ -15,6 +15,10 @@ var hippie = require('hippie'),
 			process: function(port) {return spawn('node', ['bin/node/index.js', port])}
 		},
 		{
+			name: 'java', 
+			process: function(port) {return spawn('java', ['-jar', 'bin/java/Run.jar', port])}
+		},
+		{
 			name: 'mod_neko', 
 			process: function(port) {return spawn('nekotools', ('server -h 0.0.0.0 -rewrite -p '+port+' -d bin/mod_neko').split(' '))}
 		},
@@ -76,7 +80,7 @@ var tests = [
 	function testStatic(api, target) {
 		if (['php', 'mod_neko'].indexOf(target) > -1)
 			return null
-		return api.get('/plain.txt').expectHeader('content-type', 'text/plain').expectBody('plain')
+		return api.get('/public/plain.txt').expectHeader('content-type', 'text/plain').expectBody('plain')
 	}
 ]
 

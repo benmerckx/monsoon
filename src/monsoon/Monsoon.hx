@@ -50,7 +50,7 @@ class Monsoon {
 				new TcpContainer(port)
 			#elseif  (neko || php)
 				CgiContainer.instance
-			#elseif js
+			#elseif nodejs
 				new NodeContainer(port)
 			#else
 				#error

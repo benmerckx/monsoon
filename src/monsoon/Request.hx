@@ -2,7 +2,7 @@ package monsoon;
 
 import haxe.DynamicAccess;
 import tink.http.Request.IncomingRequest;
-import tink.http.KeyValue;
+import tink.Url;
 using tink.CoreApi;
 
 class MiddlewareCollection {
@@ -32,13 +32,11 @@ class RequestAbstr<T> {
 	public var done(default, null) = Future.trigger();
 	var request: IncomingRequest;
 	
-	public var url(get, never): String;
-	inline function get_url(): String
-		return request.header.uri;
+	public var url(default, null): Url;
 	
 	public var path(get, never): String;
 	inline function get_path(): String 
-		return url.split('?')[0];
+		return url.path;
 	
 	public var method(get, never): Method;
 	inline function get_method(): Method 
@@ -57,16 +55,14 @@ class RequestAbstr<T> {
 	inline function get_ip(): String return request.clientIp;
 	
 	public var query(get, never): Map<String, String>;
-	function get_query()
-		return [
-			for (p in KeyValue.parse(url.indexOf('?') > -1 ? url.split('?')[1] : ''))
-				p.a => (p.b == null ? null : StringTools.urlDecode(p.b))
-		];
+	function get_query(): Map<String, String> 
+		return url.query.toMap();
 	
 	public var middleware(default, null): DynamicAccess<Middleware>;
 	
 	public function new(request: IncomingRequest) {
 		this.request = request;
+		this.url = request.header.uri;
 	}
 	
 	public function next()

@@ -16,6 +16,7 @@
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
     <class path="src" />
+    <class path="P:\asys" />
   </classpaths>
   <!-- Build options -->
   <build>
@@ -32,6 +33,7 @@
     <library name="tink_http" />
     <library name="tink_concurrent" />
     <library name="tink_runloop" />
+    <library name="tink_url" />
     <library name="mime" />
   </haxelib>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
