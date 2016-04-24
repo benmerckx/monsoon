@@ -6,9 +6,12 @@ neko: "2.0.0"
 matrix:
   allow_failures:
     - haxe: development
+before_install:
+  - sudo add-apt-repository ppa:ondrej/php5
+  - sudo apt-get update -q
 install:
   - sudo apt-get install -y nodejs
   - echo "y" | haxelib install ./tests/tests.hxml
   - sudo apt-get install -y php5-cli
 script:
-  - ./tests/run.sh
+  - sudo ./tests/run.sh
