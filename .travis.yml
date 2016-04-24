@@ -10,7 +10,7 @@ matrix:
 before_install:
   - sudo add-apt-repository ppa:ondrej/php5 -y
   - sudo apt-get update -q
-  - sudo apt-get upgrade -y
+  - sudo apt-get install php5-cli -y
 install:
   - echo "y" | haxelib install ./tests/tests.hxml
 script:
