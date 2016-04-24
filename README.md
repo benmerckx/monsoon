@@ -33,7 +33,7 @@ haxelib install monsoon
 ### Embedded
 
 A tcp webserver will be embedded into your application.  
-Runs on: `neko`, `cpp`
+Runs on: `neko`, `cpp`, `java`
 ```
 haxelib install monsoon-embed
 ```
