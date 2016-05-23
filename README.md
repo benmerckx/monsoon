@@ -201,6 +201,8 @@ class Request<T> {
 	var ip: String;
     // Holds all query values (eg. {query => 1})
 	var query: Map<String, String>;
+    // All cookies sent with this request
+	var cookies: Map<String, String>;
 
 	// Returns the specified HTTP request header field
 	function get(key: String): Null<String>;
