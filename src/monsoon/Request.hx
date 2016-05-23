@@ -5,7 +5,7 @@ import tink.http.Request.IncomingRequest;
 import tink.Url;
 using tink.CoreApi;
 
-class MiddlewareCollection {
+/*class MiddlewareCollection {
 	var collection: Array<Middleware>;
 	
 	@:generic
@@ -22,7 +22,7 @@ class MiddlewareCollection {
 		collection.push(instance);
 		return instance;
 	}
-}
+}*/
 
 @:keep
 @:allow(monsoon.Router)
@@ -63,11 +63,17 @@ class RequestAbstr<T> {
 		return found.length > 0 ? found[0] : null;
 	}
 	
-	public var middleware(default, null): DynamicAccess<Middleware>;
+	//public var middleware(default, null): DynamicAccess<Middleware>;
+	public var cookies: Map<String, String> = new Map();
 	
 	public function new(request: IncomingRequest) {
 		this.request = request;
 		this.url = request.header.uri;
+		// https://github.com/HaxeFoundation/haxe/pull/5270
+		for(header in request.header.get(#if php 'set_cookie' #else 'set-cookie' #end)) {
+			var line = (header: String).split(';')[0].split('=');
+			cookies.set(StringTools.urlDecode(line[0]), (line.length > 1 ? StringTools.urlDecode(line[1]) : null));
+		}
 	}
 	
 	public function next()

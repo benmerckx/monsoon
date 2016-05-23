@@ -14,7 +14,7 @@ class Controller {
 
 class Run {
 
-	inline static var target = #if cpp 'cpp' #elseif neko 'neko' #elseif nodejs 'nodejs' #elseif java 'java' #else '' #end;
+	inline static var target = #if cpp 'cpp' #elseif neko 'neko' #elseif nodejs 'nodejs' #elseif java 'java' #elseif php 'php' #else '' #end;
 
 	public static function main() {
 		var app = new Monsoon();
@@ -27,7 +27,9 @@ class Run {
 			'/controller' => Controller,
 			'/arg/:arg' => testArgumentInt,
 			'/arg/:arg' => testArgumentString,
-			'/cookie' => function(req: Request, res: Response) res.cookie('name', 'value').send('ok'),
+			'/cookie' => function(req: Request, res: Response) {
+				res.cookie('name', 'value').send(req.cookies.get('name'));
+			},
 			'/header' => function(req: Request, res: Response) res.set('test', req.get('test')).send('ok')
 		]);
 

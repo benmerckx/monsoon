@@ -69,7 +69,7 @@ var tests = [
 		return api.post('/post').send('postbody').expectBody(JSON.stringify({body: 'postbody'}))
 	},
 	function testCookie(api) {
-		return api.get('/cookie').expectHeader('set-cookie', ['name=value;'])
+		return api.get('/cookie').header('set-cookie', 'name=value').expectHeader('set-cookie', ['name=value;']).expectBody('value')
 	},
 	function testController(api) {
 		return api.json().get('/controller').expectBody({route: 'controller_index'})
