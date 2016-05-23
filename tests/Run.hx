@@ -27,7 +27,8 @@ class Run {
 			'/controller' => Controller,
 			'/arg/:arg' => testArgumentInt,
 			'/arg/:arg' => testArgumentString,
-			'/cookie' => function(req: Request, res: Response) res.cookie('name', 'value').send('ok')
+			'/cookie' => function(req: Request, res: Response) res.cookie('name', 'value').send('ok'),
+			'/header' => function(req: Request, res: Response) res.set('test', req.get('test')).send('ok')
 		]);
 
 		app.post([

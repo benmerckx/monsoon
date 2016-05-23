@@ -86,6 +86,9 @@ var tests = [
 		if (['php', 'mod_neko'].indexOf(target) > -1)
 			return null
 		return api.get('/public/').expectHeader('content-type', 'text/html').expectBody('index')
+	},
+	function testGetSetHeader(api, target) {
+		return api.get('/header').header('test', 'test-header').expectHeader('test', 'test-header')
 	}
 ]
 

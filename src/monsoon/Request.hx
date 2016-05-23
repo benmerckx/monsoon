@@ -57,6 +57,11 @@ class RequestAbstr<T> {
 	public var query(get, never): Map<String, String>;
 	function get_query(): Map<String, String> 
 		return url.query.toMap();
+		
+	public function get(name: String): Null<String> {
+		var found = request.header.get(name);
+		return found.length > 0 ? found[0] : null;
+	}
 	
 	public var middleware(default, null): DynamicAccess<Middleware>;
 	

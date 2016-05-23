@@ -202,7 +202,9 @@ class Request<T> {
     // Holds all query values (eg. {query => 1})
 	var query: Map<String, String>;
 
-	// Use in a callback to pass this request to the next route
+	// Returns the specified HTTP request header field
+	function get(key: String): Null<String>;
+	// Use in a callback/middleware to pass this request to the next route
 	function next();
     // Returns a printable representation of the request
 	function toString();
@@ -220,7 +222,7 @@ class Response {
 	// Set a cookie, see monsoon.Response.CookieOptions
 	function cookie(name: String, value: String, ?options: CookieOptions): Response;
 	// Sets 'Content-Type' to 'application/json' and sends output as json
-	function json(output: Dynamic, ?space): Response;
+	function json(output: Dynamic, ?space: String): Response;
 	// Set a header
 	function set(key: String, value: String): Response;
 	// Get a previously set header, or null if not set
