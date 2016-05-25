@@ -59,6 +59,10 @@ class RequestAbstr<T> {
 		return url.query.toMap();
 		
 	public function get(name: String): Null<String> {
+		// todo: remove this next tink_http update
+		#if php
+		name = name.split('-').join('_');
+		#end
 		var found = request.header.get(name);
 		return found.length > 0 ? found[0] : null;
 	}

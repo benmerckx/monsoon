@@ -118,6 +118,15 @@ app.post('/submit', function(req, res, body: Body)
 );
 ```
 
+#### Compression
+
+Compresses the result of your response using gzip, if accepted by the client.
+Takes one optional argument: `?level: Int`, the compression level of 0-9.
+
+```haxe
+app.route(new Compression());
+```
+
 #### Static
 
 The static middleware can be used to serve static files (js, css, html etc.). It is recommended to use seperate software (nginx, varnish) to serve your static files but this can be used during development or on low traffic websites.

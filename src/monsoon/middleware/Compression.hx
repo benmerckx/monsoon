@@ -9,16 +9,15 @@ import js.node.Zlib;
 #else
 import haxe.io.BytesBuffer;
 import haxe.crypto.Crc32;
-import haxe.zip.Compress;
 #end
 
 using Monsoon;
 
-class Gzip implements ConfigurableMiddleware {
+class Compression implements ConfigurableMiddleware {
 	
 	var level: Int = 9;
 	
-	private function new(level: Null<Int>) {
+	public function new(?level: Int) {
 		if (level != null)
 			this.level = level;
 	}
@@ -30,7 +29,7 @@ class Gzip implements ConfigurableMiddleware {
 	function process(request: Request, response: Response) {
 		var accept = request.get('accept-encoding');
 		if (accept == null || accept.indexOf('gzip') == -1)
-			request.next();
+			return request.next();
 			
 		response.done.asFuture().handle(function(_) {
 			var out = @:privateAccess response.output;
@@ -56,7 +55,7 @@ class Gzip implements ConfigurableMiddleware {
 			buffer.addByte(0x03);
 			var compressed;
 			#if !php
-			compressed = Compress.run(input, level);
+			compressed = haxe.zip.Compress.run(input, level);
 			#else
 			var c = untyped __call__("gzcompress", input.toString(), level);
 			compressed = haxe.io.Bytes.ofString(c);
@@ -73,10 +72,6 @@ class Gzip implements ConfigurableMiddleware {
 			@:privateAccess response.output = Output.Bytes(bytes);
 		});
 		request.next();
-	}
-	
-	public static function compress(?level: Int) {
-		return new Gzip(level);
 	}
 	
 }
