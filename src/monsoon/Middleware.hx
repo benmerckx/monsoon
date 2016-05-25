@@ -1,9 +1,9 @@
 package monsoon;
 
-interface ConfigurableMiddleware {
-	public function setRouter(router: Router): Void;
+typedef RouteController = {
+	function createRoutes(router : Router) : Void;
 }
 
 typedef Middleware = {
-	public function new(router: Router): Void;
+	function process(request: Request, response: Response): Void;
 }

@@ -26,6 +26,7 @@ using tink.CoreApi;
 
 @:keep
 @:allow(monsoon.Router)
+@:allow(monsoon.PathMatcher)
 class RequestAbstr<T> {
 	
 	public var params(default, null): T;
@@ -34,9 +35,7 @@ class RequestAbstr<T> {
 	
 	public var url(default, null): Url;
 	
-	public var path(get, never): String;
-	inline function get_path(): String 
-		return url.path;
+	public var path(default, null): String;
 	
 	public var method(get, never): Method;
 	inline function get_method(): Method 
@@ -73,6 +72,7 @@ class RequestAbstr<T> {
 	public function new(request: IncomingRequest) {
 		this.request = request;
 		this.url = request.header.uri;
+		//path = url.path;
 		// https://github.com/HaxeFoundation/haxe/pull/5270
 		for(header in request.header.get(#if php 'set_cookie' #else 'set-cookie' #end)) {
 			var line = (header: String).split(';')[0].split('=');

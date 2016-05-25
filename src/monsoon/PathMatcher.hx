@@ -42,15 +42,21 @@ class PathMatcher implements Matcher<Path> {
 			return Failure(Noise);
 			
 		var path = Path.format(route.path),
-			uri = Path.format(request.path),
-			types = route.types;
+			uri = Path.format(request.url.path),
+			types = route.types,
+			pathPrefix = '';
 			
 		for (p in prefix)
 			if (Std.is(p, String) && p != '*') // Todo: this should check for Path once different matchers are allowed
-				path = p + '/' + path;
-				
-		if (route.isMiddleware)
+				pathPrefix = p + '/' + pathPrefix;
+		path = pathPrefix + path;
+		
+		if (route.isMiddleware) {
 			path += '/*';
+			request.path = Path.format(uri.substr(Path.format(path).length));
+		} else {
+			request.path = uri;
+		}
 		path = Path.format(path);
 			
 		if (path == Path.ASTERISK) 

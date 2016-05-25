@@ -7,7 +7,9 @@ import monsoon.middleware.Compression;
 using Monsoon;
 
 class Controller {
-	public function new(router: Router) {
+	public function new() {}
+	
+	public function createRoutes(router: Router) {
 		router.get('/', function(req: Request, res: Response) res.json({route: 'controller_index'}));
 		router.get('/path', function(req: Request, res: Response) res.json({route: 'controller_path'}));
 	}
@@ -25,7 +27,7 @@ class Run {
 		app.route('/', function(req: Request, res: Response) res.send('ok'));
 
 		app.get([
-			'/controller' => Controller,
+			'/controller' => new Controller(),
 			'/arg/:arg' => testArgumentInt,
 			'/arg/:arg' => testArgumentString,
 			'/cookie' => function(req: Request, res: Response) {

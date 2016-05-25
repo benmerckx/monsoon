@@ -1,6 +1,5 @@
 package monsoon.middleware;
 
-import monsoon.Middleware.ConfigurableMiddleware;
 import monsoon.Router;
 import haxe.io.BytesOutput;
 import haxe.io.Bytes;
@@ -17,17 +16,13 @@ import haxe.crypto.Crc32;
 using Monsoon;
 using tink.CoreApi;
 
-class Compression implements ConfigurableMiddleware {
+class Compression {
 	
 	var level: Int = 9;
 	
 	public function new(?level: Int) {
 		if (level != null)
 			this.level = level;
-	}
-	
-	public function setRouter(router: Router) {
-		router.route(process);
 	}
 	
 	#if !nodejs
@@ -52,7 +47,7 @@ class Compression implements ConfigurableMiddleware {
 		@:privateAccess response.output = bytes;
 	}
 	
-	function process(request: Request, response: Response) {
+	public function process(request: Request, response: Response) {
 		var accept = request.get('accept-encoding');
 		if (accept == null || accept.indexOf('gzip') == -1)
 			return request.next();

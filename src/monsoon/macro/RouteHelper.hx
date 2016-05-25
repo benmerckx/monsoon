@@ -98,7 +98,7 @@ class RouteHelper {
 			
 		if(isMiddleware == null) isMiddleware = false;
 		
-		switch type.expr {
+		/*switch type.expr {
 			// middleware/controller
 			case TypedExprDef.TTypeExpr(module):
 				switch module {
@@ -124,20 +124,30 @@ class RouteHelper {
 						isMiddleware = true;
 					default:
 				}
-			default:
-				var mwInterface = ComplexTypeTools.toType(macro: monsoon.Middleware.ConfigurableMiddleware);
-				if (Context.unify(Context.typeof(callback), mwInterface)) {
+			default:*/
+				var routerInterface = ComplexTypeTools.toType(macro: monsoon.Middleware.RouteController);
+				if (Context.unify(Context.typeof(callback), routerInterface)) {
 					callback = macro @:pos(callback.pos) function(req: Request, res: Response, info: monsoon.middleware.Route<tink.core.Any>) {
 						var router = new monsoon.Router($router, info.path);
-						($callback).setRouter(router);
+						($callback).createRoutes(router);
 						router.passThrough(req, res).handle(function(success)
 							if (!success) req.next()
 						);
 					};
 					type = Context.typeExpr(callback);
 					isMiddleware = true;
+				} else {
+					var mwInterface = TypeTools.follow(ComplexTypeTools.toType(macro: monsoon.Middleware.Middleware));
+					if (Context.unify(Context.typeof(callback), mwInterface)) {
+						callback = macro @:pos(callback.pos) function(req: Request, res: Response, info: monsoon.middleware.Route<tink.core.Any>) {
+							@:privateAccess req.path = (req.url.path: String).substr((info.path: String).length);
+							($callback).process(req, res);
+						};
+						type = Context.typeExpr(callback);
+						isMiddleware = true;
+					}
 				}
-		}
+		//}
 			
 		var args = argsFromTypedExpr(type);
 		
