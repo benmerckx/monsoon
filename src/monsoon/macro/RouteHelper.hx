@@ -21,6 +21,9 @@ typedef Arg = {
 }
 
 class AppHelper {
+	macro public static function use(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.All, macro $app.router, path, callback, true);
+		
 	macro public static function route(app: ExprOf<Monsoon>, path: Expr, ?callback: Expr)
 		return RouteHelper.addRoute(Method.All, macro $app.router, path, callback);
 	
@@ -47,7 +50,9 @@ class AppHelper {
 }
 
 class RouteHelper {
-	
+	macro public static function use(router: ExprOf<Router>, path: Expr, ?callback: Expr)
+		return RouteHelper.addRoute(Method.All, router, path, callback, true);
+		
 	macro public static function route(router: ExprOf<Router>, path: Expr, ?callback: Expr)
 		return RouteHelper.addRoute(Method.All, router, path, callback);
 		
@@ -74,7 +79,7 @@ class RouteHelper {
 	
 	#if macro
 	
-	public static function addRoute<A, B>(method: Method, router: Expr, path: Expr, callback: Expr): Expr {
+	public static function addRoute<A, B>(method: Method, router: Expr, path: Expr, callback: Expr, ?isMiddleware: Bool): Expr {
 		switch callback {
 			case macro null:
 				switch path.expr {
@@ -89,8 +94,9 @@ class RouteHelper {
 		var type = Context.typeExpr(callback),
 			args: Array<Arg>,
 			state = ComplexType.TAnonymous([]),
-			middleware = [],
-			isMiddleware = false;
+			middleware = [];
+			
+		if(isMiddleware == null) isMiddleware = false;
 		
 		switch type.expr {
 			// middleware/controller

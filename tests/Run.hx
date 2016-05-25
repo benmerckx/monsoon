@@ -20,7 +20,7 @@ class Run {
 	public static function main() {
 		var app = new Monsoon();
 
-		app.route('/public', Static.serve('public'));
+		app.use('/public', Static.serve('public'));
 
 		app.route('/', function(req: Request, res: Response) res.send('ok'));
 
@@ -38,7 +38,7 @@ class Run {
 			'/post' => testMiddleware
 		]);
 		
-		app.route(new Compression());
+		app.use(new Compression());
 		app.route('/gzip', function(req, res) res.send('zipped'));
 
 		var port = #if (sys || nodejs) Sys.args().length > 0 ? Std.parseInt(Sys.args()[0]) : 80 #else 80 #end;
