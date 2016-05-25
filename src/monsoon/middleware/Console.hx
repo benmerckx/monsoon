@@ -15,21 +15,18 @@ class Console {
 	var defaultTrace: Dynamic -> PosInfos -> Void;
 
 	public function new(router: Router) {
-		defaultTrace = haxe.Log.trace;
+		defaultTrace = haxe.Log.trace; // todo: this doesn't work
 		haxe.Log.trace = function(v: Dynamic, ?info: PosInfos) logs.push(new Log(v, info));
 		router.route(function(request: Request, response: Response) {
-			response.done.asFuture().handle(function(_) {
+			response.after.unshift(function() {
 				// Only print logs if this an html response
 				var type = response.get('content-type');
 				if (type == null || type.indexOf('text/html') == -1) {
 					logs.map(function(log) defaultTrace(log.a, log.b));
 					return;
 				}
-				switch response.output {
-					case Output.String(s):
-						response.output = Output.String(s+'\n<script>'+logs.map(logLine).join('')+'</script>');
-					default:
-				}
+				response.output.append('\n<script>'+logs.map(logLine).join('')+'</script>');
+				return Future.sync(Noise);
 			});
 			request.next();
 		});

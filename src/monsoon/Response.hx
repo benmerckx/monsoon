@@ -24,19 +24,15 @@ typedef CookieOptions = {
 	?secure: Bool,
 }
 
-enum Output {
-	String(s: String);
-	Bytes(b: Bytes);
-}
-
 @:keep
 class Response {
 	
-	public var done(default, null) = Future.trigger();
+	public var after(default, null): Array<Void -> Future<Noise>> = [];
 	public var headers(default, null): Map<String, String>;
+	var done = Future.trigger();
 	var cookies: Array<Cookie>;
 	var code: Int;
-	var output: Output = Output.String('');
+	var output: IdealSource;
 	
 	public function new () clear();
 	
@@ -88,7 +84,7 @@ class Response {
 		send(null);
 		
 	public function send(output: String) {
-		this.output = Output.String(output);
+		this.output = output;
 		done.trigger(Noise);
 	}
 	
@@ -103,10 +99,10 @@ class Response {
 				contentType += '; charset='+info.charset.toLowerCase();
 		}
 		set('content-type', contentType);
-		File.getBytes(path).handle(function(res) {
-			this.output = Output.Bytes(res.sure());
-			done.trigger(Noise);
-		});
+		output = File.readStream(path).idealize(function(e)
+			error('Could not read file: '+path)
+		);
+		done.trigger(Noise);
 	}
 		
 	function encodeCookie(cookie: Cookie) {
@@ -155,10 +151,7 @@ class Response {
 	function tinkResponse()
 		return new OutgoingResponse(
 			new ResponseHeader(code, code > 400 ? 'ERROR' : 'OK', tinkHeaders()),
-			switch output {
-				case Output.String(s): s;
-				case Output.Bytes(b): b;
-			}
+			output
 		);
 		
 }

@@ -15,6 +15,7 @@ typedef AppOptions = {
 	?watch: Bool, ?threads: Int
 }
 
+@:access(monsoon.Response)
 class Monsoon {
 	
 	public var router(default, null): Router = new Router();
@@ -38,7 +39,12 @@ class Monsoon {
 		});
 		
 		response.done.asFuture().handle(function(_) {
-			trigger.trigger(response.tinkResponse());
+			function nextFilter(_)
+				if (response.after.length == 0)
+					trigger.trigger(response.tinkResponse())
+				else
+					(response.after.shift())().handle(nextFilter);
+			nextFilter(null);
 		});
 		
 		return trigger.asFuture();

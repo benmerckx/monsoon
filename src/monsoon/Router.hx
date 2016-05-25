@@ -24,6 +24,7 @@ typedef Route<P> = {
 	?order: Int
 }
 
+@:access(monsoon.Response)
 class Router {
 	
 	public static var DEFAULT_MATCHER(default, null) = new PathMatcher();
