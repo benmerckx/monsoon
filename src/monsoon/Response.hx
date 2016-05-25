@@ -154,7 +154,7 @@ class Response {
 	@:allow(monsoon.Monsoon)
 	function tinkResponse()
 		return new OutgoingResponse(
-			new ResponseHeader(code, code > 400 ? 'OK' : 'ERROR', tinkHeaders()),
+			new ResponseHeader(code, code > 400 ? 'ERROR' : 'OK', tinkHeaders()),
 			switch output {
 				case Output.String(s): s;
 				case Output.Bytes(b): b;

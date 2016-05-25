@@ -2,6 +2,7 @@ package;
 
 import monsoon.middleware.Body;
 import monsoon.middleware.Static;
+import monsoon.middleware.Gzip;
 
 using Monsoon;
 
@@ -36,6 +37,9 @@ class Run {
 		app.post([
 			'/post' => testMiddleware
 		]);
+		
+		app.route(Gzip.compress());
+		app.route('/gzip', function(req, res) res.send('zipped'));
 
 		var port = #if (sys || nodejs) Sys.args().length > 0 ? Std.parseInt(Sys.args()[0]) : 80 #else 80 #end;
 		app.listen(port);

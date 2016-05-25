@@ -89,6 +89,9 @@ var tests = [
 	},
 	function testGetSetHeader(api, target) {
 		return api.get('/header').header('test', 'test-header').expectHeader('test', 'test-header')
+	},
+	function testGzip(api, target) {
+		return api.header('accept-encoding', 'gzip').get('/gzip').expectHeader('content-encoding', 'gzip')
 	}
 ]
 

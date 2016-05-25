@@ -9,9 +9,9 @@
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
-	"tink_url": "0.0.3",
-  	"tink_http": "0.2.0",
-	"asys": "0.0.4",
-	"mime": "0.0.1"
+    "tink_url": "0.0.3",
+    "tink_http": "0.2.0",
+    "asys": "0.0.6",
+    "mime": "0.0.1"
   }
 }
