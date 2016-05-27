@@ -1,8 +1,5 @@
-*.n
-bin
-node_modules
-/Forever.hx
-/Main.hx
-/build.hxml
-/docker-compose.yml
+/bin
+/tests_old
 /build
+*.hxproj
+/modd.conf

@@ -28,7 +28,7 @@ class Monsoon {
 		concatOptions(this.options, options);
 	}
 		
-	function serve(incoming: IncomingRequest) {
+	public function serve(incoming: IncomingRequest) {
 		var request = new Request(incoming),
 			response = new Response(),
 			trigger = Future.trigger();
