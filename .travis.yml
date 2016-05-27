@@ -17,7 +17,7 @@ matrix:
     
 install:
   - haxelib install travix
-  - haxelib install monsoon-embed
+  - haxelib install monsoon-embed --always
   - haxelib run travix install
 
 script:
