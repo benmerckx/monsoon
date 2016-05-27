@@ -141,7 +141,8 @@ class RouteHelper {
 					if (Context.unify(Context.typeof(callback), mwInterface)) {
 						callback = macro @:pos(callback.pos) function(req: Request, res: Response, info: monsoon.middleware.Route<tink.core.Any>) {
 							@:privateAccess req.path = (req.url.path: String).substr((info.path: String).length);
-							($callback).process(req, res);
+							var t = $callback;
+							t.process(req, res);
 						};
 						type = Context.typeExpr(callback);
 						isMiddleware = true;
