@@ -17,12 +17,12 @@ matrix:
     
 install:
   - haxelib install travix
+  - haxelib install monsoon-embed
   - haxelib run travix install
 
 script:
   - haxelib run travix php
   - haxelib run travix neko
-  - haxelib run travix neko -lib monsoon-embed
+  - haxelib run travix node
   - haxelib run travix java -lib monsoon-embed
   - haxelib run travix cpp -lib monsoon-embed
-  - haxelib run travix node -lib monsoon-embed
