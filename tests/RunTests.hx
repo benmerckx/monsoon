@@ -8,5 +8,8 @@ class RunTests implements Buddy<[
 	TestResponse,
 	TestRouter,
 	TestMiddleware,
-	TestRouteController
+	TestRouteController,
+	TestBody,
+	TestStatic,
+	TestCompression
 ]> {}
