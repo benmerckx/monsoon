@@ -44,13 +44,17 @@ class TestRouteController extends BuddySuite {
 			it('app.use should change the request path', function(done) {
 				var app = new Monsoon();
 				app.use('/prefix', function(req: Request, res: Response) {
-					req.path.should.be('/abc');
+					req.path.should.be('abc');
 					res.end();
 				});
-				app.serve(request('/prefix/abc')).handle(function(res: TinkResponse) {
-					res.status.should.be(200);
-					done();
+				app.use(function(req: Request, res: Response) {
+					req.path.should.be('abc');
+					res.end();
 				});
+				Future.ofMany([
+					app.serve(request('/prefix/abc')),
+					app.serve(request('/abc'))
+				]).handle(function(_) done());
 			});
         });
 	}

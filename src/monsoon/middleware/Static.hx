@@ -25,6 +25,7 @@ class Static {
 	
 	public function process(request: Request, response: Response) {
 		var path = Path.join([directory, request.path]);
+		if (path == '') path = '.';
 		if (request.method != Method.Get) {
 			request.next();
 			return;

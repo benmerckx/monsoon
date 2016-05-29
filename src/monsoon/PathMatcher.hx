@@ -51,26 +51,13 @@ class PathMatcher implements Matcher<Path> {
 				pathPrefix = p + '/' + pathPrefix;
 		path = pathPrefix + path;
 		
-		if (route.isMiddleware) {
-			path += '/*';
-			request.path = Path.format(uri.substr(Path.format(path).length));
-		} else {
-			request.path = uri;
-		}
-		path = Path.format(path);
-			
-		if (path == Path.ASTERISK) 
-			return Success(null);
-		if (path.indexOf(Path.IDENTIFIER) == -1 && path.indexOf(Path.ASTERISK) == -1) {
-			if (uri == path) 
-				return Success(null);
-			return Failure(Noise);
-		}
+		if (route.isMiddleware && path.substr(path.length-1) != Path.ASTERISK)
+			path += '/'+Path.ASTERISK;
 		
+		path = Path.format(path);
+					
 		var pathSegments = path.split('/');
 		var uriSegments = uri.split('/');
-		if (path.indexOf(Path.ASTERISK) == -1 && pathSegments.length != uriSegments.length)
-			return Failure(Noise);
 		
 		// create regex - todo: cleanup
 		var vars = [];
@@ -109,6 +96,8 @@ class PathMatcher implements Matcher<Path> {
 					}
 					i++;
 				}
+				if (route.isMiddleware && vars.length > 0)
+					request.path = regex.matched(vars.length);
 				return Success(params);
 			default:
 				return Failure(Noise);

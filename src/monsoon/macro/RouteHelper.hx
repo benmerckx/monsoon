@@ -139,8 +139,7 @@ class RouteHelper {
 				} else {
 					var mwInterface = TypeTools.follow(ComplexTypeTools.toType(macro: monsoon.Middleware.Middleware));
 					if (Context.unify(Context.typeof(callback), mwInterface)) {
-						callback = macro @:pos(callback.pos) function(req: Request, res: Response, info: monsoon.middleware.Route<tink.core.Any>) {
-							@:privateAccess req.path = (req.url.path: String).substr((info.path: String).length);
+						callback = macro @:pos(callback.pos) function(req: Request, res: Response) {
 							var t = $callback;
 							t.process(req, res);
 						};

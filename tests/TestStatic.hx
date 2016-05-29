@@ -18,14 +18,20 @@ class TestStatic extends BuddySuite {
 		
         describe('Static middleware', {
             it('should serve files', function(done) {
-				app.use(Static.serve('/'));
-				app.serve(request('/README.md')).handle(function(res: TinkResponse) {
+				app.use(Static.serve('.'));
+				app.serve(request('/haxelib.json')).handle(function(res: TinkResponse) {
 					res.status.should.be(200);
 					done();
 				});
 			});
 			
-			it('should serve index files for a directory');
+			it('should serve index files for a directory', function(done) {
+				app.use(Static.serve('.', {index: ['haxelib.json']}));
+				app.serve(request('/')).handle(function(res: TinkResponse) {
+					res.status.should.be(200);
+					done();
+				});
+			});
         });
 	}
 	

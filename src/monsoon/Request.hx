@@ -72,9 +72,8 @@ class RequestAbstr<T> {
 	public function new(request: IncomingRequest) {
 		this.request = request;
 		this.url = request.header.uri;
-		//path = url.path;
-		// https://github.com/HaxeFoundation/haxe/pull/5270
-		for(header in request.header.get(#if php 'set_cookie' #else 'set-cookie' #end)) {
+		path = url.path;
+		for(header in request.header.get('set-cookie')) {
 			var line = (header: String).split(';')[0].split('=');
 			cookies.set(StringTools.urlDecode(line[0]), (line.length > 1 ? StringTools.urlDecode(line[1]) : null));
 		}
