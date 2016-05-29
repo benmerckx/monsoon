@@ -4,7 +4,7 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "releasenote": "Static files served asynchronously",
   "contributors": ["benmerckx"],
   "classPath": "src",
