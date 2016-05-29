@@ -124,7 +124,7 @@ Compresses the result of your response using gzip, if accepted by the client.
 Takes one optional argument: `?level: Int`, the compression level of 0-9.
 
 ```haxe
-app.route(new Compression());
+app.use(new Compression());
 ```
 
 #### Static
@@ -135,11 +135,11 @@ If a file is found it will be served with the correct content-type. If no file i
 
 ```haxe
 // Any file in the public folder will be served
-app.route(Static.serve('public')); 
+app.use(Static.serve('public')); 
 // You can change the index files it looks for (default is index.html, index.htm)
-app.route(Static.serve('public', {index: ['index.txt', 'index.html']})); 
+app.use(Static.serve('public', {index: ['index.txt', 'index.html']})); 
 // It can be prefixed like any other route
-app.route('/assets', Static.serve('public')); 
+app.use('/assets', Static.serve('public')); 
 ```
 
 #### Console
@@ -149,7 +149,7 @@ Middleware can used for all matching requests in the current router by passing t
 
 
 ```haxe
-app.route(Console); // Is the same as app.route('*', Console);
+app.use(new Console());
 ```
 
 ![Console](https://github.com/benmerckx/monsoon/blob/master/docs/console.png?raw=true "")
@@ -158,8 +158,8 @@ app.route(Console); // Is the same as app.route('*', Console);
 
 Middleware is defined as one of these forms:
 ```haxe
-interface ConfigurableMiddleware {public function setRouter(router: Router): Void;}
-typedef Middleware = {public function new(router: Router): Void;}
+typedef RouteController = {function createRoutes(router : Router) : Void;}
+typedef Middleware = {function process(request: Request, response: Response): Void;}
 ```
 
 The router argument can be used the route any request (it defines the same http methods for routing).
@@ -168,7 +168,7 @@ Middleware can be used to create controllers. A very simple example:
 
 ```haxe
 class Blog {
-	public function new(router: Router) {
+	public function createRoutes(router: Router) {
     	router.get([
         	'/' => index,
             '/:item' => detail
@@ -184,8 +184,8 @@ class Blog {
 
 // Somewhere else:
 
-app.route([
-	'/blog' => Blog
+app.use([
+	'/blog' => new Blog()
 ]);
 
 // This will serve /blog as index and /blog/item-title as detail
