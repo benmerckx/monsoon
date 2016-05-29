@@ -80,8 +80,8 @@ class Compression {
 						var c = untyped __call__("gzcompress", input.toString(), level);
 						compressed = haxe.io.Bytes.ofString(c);
 						#end
-						// Remove zlib header
-						buffer.addBytes(compressed, 2, compressed.length-2);
+						// Remove zlib header/checksum
+						buffer.addBytes(compressed, 2, compressed.length-4);
 						buffer.addInt32(Crc32.make(input));
 						buffer.addInt32(input.length);
 						var bytes = buffer.getBytes();

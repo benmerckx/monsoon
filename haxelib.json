@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.1.0",
-  "releasenote": "Static files served asynchronously",
+  "version": "0.1.1",
+  "releasenote": "Update gzip compression",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
