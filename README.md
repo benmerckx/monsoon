@@ -107,17 +107,6 @@ app.get('/blog/*splat', function(req: Request<{splat: String}>, res)
 
 Bundled middleware can be found in `monsoon.middleware`.
 
-#### Body
-
-Parses the request body to string. The resulting instance has a `toString()` method so you can use the body. A `toMap()` method is also supplied for parsing key value pairs (eg. form submission).   
-The middleware (and any other) can be injected into a route simply by adding it to the callback's arguments:
-
-```haxe
-app.post('/submit', function(req, res, body: Body)
-	res.send('Post body content '+body);
-);
-```
-
 #### Compression
 
 Compresses the result of your response using gzip, if accepted by the client.
@@ -204,6 +193,8 @@ class Request<T> {
 	var path: String;
     // The http request method (see monsoon.Method)
 	var method: Method;
+	// The request body, plain or parsed (see tink.http)
+	var body: IncomingRequestBody;
     // The hostname if it was set in the request headers
 	var hostname: Null<String>;
     // IP of the client that made the request

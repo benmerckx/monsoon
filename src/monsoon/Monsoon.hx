@@ -53,22 +53,20 @@ class Monsoon {
 	public function listen(port: Int = 80) {
 		var container =
 			#if embed
-				new TcpContainer(port)
-			#elseif (neko || php)
-				CgiContainer.instance
+				new tink.http.containers.TcpContainer(port)
+			#elseif php
+				tink.http.containers.PhpContainer.inst
+			#elseif neko
+				tink.http.containers.ModnekoContainer.inst
 			#elseif nodejs
-				new NodeContainer(port)
+				new tink.http.containers.NodeContainer(port)
 			#else
 				#error
 			#end
 		;
 		
 		try {
-			container.run({
-				serve: #if embed loop() #else serve #end,
-				onError: function(e) trace(e),
-				done: Future.trigger()
-			});
+			container.run(#if embed loop() #else serve #end);
 		} catch (e: String) {
 			if (e.indexOf('socket_bind') > -1 || e.indexOf('bind failed') > -1)
 				throw "Could not bind on port "+port;

@@ -3,26 +3,8 @@ package monsoon;
 import haxe.DynamicAccess;
 import tink.http.Request.IncomingRequest;
 import tink.Url;
+import tink.http.Request.IncomingRequestBody;
 using tink.CoreApi;
-
-/*class MiddlewareCollection {
-	var collection: Array<Middleware>;
-	
-	@:generic
-	public function get<T: Middleware>(type: Class<T>): T {
-		for (mw in collection) {
-			if (Std.is(mw, type)) {
-				return cast mw;
-			}
-		}
-		return null;
-	}
-	
-	public function set<T: Middleware>(instance: T): T {
-		collection.push(instance);
-		return instance;
-	}
-}*/
 
 @:keep
 @:allow(monsoon.Router)
@@ -40,6 +22,10 @@ class RequestAbstr<T> {
 	public var method(get, never): Method;
 	inline function get_method(): Method 
 		return (request.header.method: String).toLowerCase();
+		
+	public var body(get, never): IncomingRequestBody;
+	inline function get_body(): IncomingRequestBody 
+		return request.body;
 	
 	public var hostname(get, never): Null<String>;
 	function get_hostname(): Null<String>{
@@ -62,7 +48,6 @@ class RequestAbstr<T> {
 		return found.length > 0 ? found[0] : null;
 	}
 	
-	//public var middleware(default, null): DynamicAccess<Middleware>;
 	public var cookies: Map<String, String> = new Map();
 	
 	public function new(request: IncomingRequest) {

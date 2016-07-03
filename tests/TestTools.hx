@@ -3,15 +3,17 @@ package;
 import haxe.Json;
 import tink.http.Header.HeaderField;
 import tink.http.Method;
-import tink.http.Request.IncomingRequest;
-import tink.http.Request.IncomingRequestHeader;
+import tink.http.Request;
 import tink.http.Response.OutgoingResponse;
 import tink.io.Buffer;
 
 class TestTools {
 
 	public static function request(?method: Method, path: String, ?fields: TinkHeaderFields, body = '')
-		return new IncomingRequest('127.0.0.1', new IncomingRequestHeader(method == null ? GET : method, path, '1.1', fields == null ? [] : fields), body);
+	return new IncomingRequest('127.0.0.1', 
+		new IncomingRequestHeader(method == null ? GET : method, path, '1.1', fields == null ? [] : fields), 
+	IncomingRequestBody.Plain(body)
+	);
 	
 }
 
