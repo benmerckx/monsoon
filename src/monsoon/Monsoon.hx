@@ -1,133 +1,62 @@
 package monsoon;
 
 import tink.http.Container;
+import tink.http.containers.*;
 import tink.http.Header.HeaderField;
 import tink.http.Request;
 import tink.http.Response;
 import tink.core.Future;
-import sys.FileSystem;
-import monsoon.Request;
-import monsoon.Response;
-import monsoon.Router;
+import tink.http.Handler;
+
+using Lambda;
 using tink.CoreApi;
 
-typedef AppOptions = {
-	?watch: Bool, ?threads: Int
-}
+typedef Layer = IncomingRequest -> Handler -> Future<OutgoingResponse>;
 
-@:access(monsoon.Response)
-class Monsoon {
+@:forward
+abstract Monsoon(Array<Layer>) from Array<Layer> {
 	
-	public var router(default, null): Router = new Router();
-	var options: AppOptions = {
-		watch: false,
-		threads: 64
-	};
-
-	public function new(?options: AppOptions) {
-		concatOptions(this.options, options);
-	}
-		
-	public function serve(incoming: IncomingRequest) {
-		var request = new Request(incoming),
-			response = new Response(),
-			trigger = Future.trigger();
-		
-		router.passThrough(request, response).handle(function(success) {
-			if (!success)
-				response.error(404, '404 Not found');
-		});
-		
-		response.done.asFuture().handle(function(_) {
-			function nextFilter(_)
-				if (response.after.length == 0)
-					trigger.trigger(response.tinkResponse())
+	public inline function new()
+		this = [];
+			
+	public inline function get(path: String, handler: Handler)
+		return add(function (req, next)
+			return
+				if (req.header.uri == path)
+					handler.process(req)
 				else
-					(response.after.shift())().handle(nextFilter);
-			nextFilter(null);
-		});
+					next.process(req)
+		);
+	
+	inline function toHandler(notFound: Handler): Handler
+		return this.fold(
+			function(curr, prev): Handler
+				return function (req)
+					return curr(req, prev), 
+			notFound
+		);
 		
-		return trigger.asFuture();
+	public inline function add(layer: Layer): Monsoon {
+		this.unshift(layer);
+		return this;
 	}
 	
-	public function listen(port: Int = 80) {
-		var container =
+	// todo: add options (watch, notfound, etc)
+	public inline function listen(port: Int = 80): Future<ContainerResult>
+		return (
 			#if embed
-				new tink.http.containers.TcpContainer(port)
+				new TcpContainer(port)
 			#elseif php
-				tink.http.containers.PhpContainer.inst
+				PhpContainer.inst
 			#elseif neko
-				tink.http.containers.ModnekoContainer.inst
+				ModnekoContainer.inst
 			#elseif nodejs
-				new tink.http.containers.NodeContainer(port)
+				new NodeContainer(port)
 			#else
 				#error
 			#end
-		;
-		
-		try {
-			container.run(#if embed loop() #else serve #end);
-		} catch (e: String) {
-			if (e.indexOf('socket_bind') > -1 || e.indexOf('bind failed') > -1)
-				throw "Could not bind on port "+port;
-			throw e;
-		}
-		
-		#if (embed && neko) if (options.watch) watch(); #end
-	}
-	
-	#if embed
-	
-	function loop() {
-		var queue = new tink.concurrent.Queue<Pair<IncomingRequest, Callback<OutgoingResponse>>>();
-		for (i in 0 ... options.threads) {
-			new tink.concurrent.Thread(function () 
-				while (true) {
-					var req = queue.await();
-					serve(req.a).handle(function(response){
-						req.b.invoke(response);
-					});
-				}
-			);
-		}
-		return function (incoming) { 
-			var trigger = Future.trigger();
-			queue.push(new Pair(incoming, function (res) tink.RunLoop.current.work(function () trigger.trigger(res))));
-			return trigger.asFuture();
-		}
-	}
-	
-	#if neko
-	function watch() {
-		new tink.concurrent.Thread(function () {
-			var file = neko.vm.Module.local().name;
-			
-			function stamp() return 
-				try FileSystem.stat(file).mtime.getTime()
-				catch (e:Dynamic) Math.NaN;
-				
-			var initial = stamp();
-			
-			while (true) {
-				Sys.sleep(.1);
-				if (stamp() > initial)
-					Sys.exit(0);
-			}
-		});
-		
-	}
-	#end
-	
-	#end
-	
-	public static function concatOptions<T>(a: T, b: Dynamic): T {
-		if (b != null)
-			for (key in Reflect.fields(b))
-				Reflect.setField(a, key, Reflect.field(b, key));
-		return a;
-	}
-	
-	#if display
-	public function route<P>(path: P, callback: Request -> Response -> Void) {}
-	#end
+		).run(toHandler(
+			function (req)
+				return Future.sync(('404 not found': OutgoingResponse))
+		));
 }
