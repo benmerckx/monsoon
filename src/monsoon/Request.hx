@@ -1,73 +1,72 @@
 package monsoon;
 
-import haxe.DynamicAccess;
-import tink.http.Request.IncomingRequest;
+import tink.http.Request;
 import tink.Url;
-import tink.http.Request.IncomingRequestBody;
+import tink.http.Method;
+
 using tink.CoreApi;
 
-@:keep
-@:allow(monsoon.Router)
-@:allow(monsoon.PathMatcher)
-class RequestAbstr<T> {
+@:forward
+abstract RequestHelper<T: IncomingRequest>(T) from T to T {
 	
-	public var params(default, null): T;
-	public var done(default, null) = Future.trigger();
-	var request: IncomingRequest;
-	
-	public var url(default, null): Url;
-	
-	public var path(default, null): String;
+	public inline function new(req)
+		this = req;
+		
+	public var url(get, never): Url;
+	inline function get_url(): Url 
+		return this.header.uri;
 	
 	public var method(get, never): Method;
 	inline function get_method(): Method 
-		return (request.header.method: String).toLowerCase();
-		
-	public var body(get, never): IncomingRequestBody;
-	inline function get_body(): IncomingRequestBody 
-		return request.body;
+		return this.header.method;
 	
 	public var hostname(get, never): Null<String>;
-	function get_hostname(): Null<String>{
-		// todo: check X-Forwarded-For
-		var headers = request.header.get('host');
+	inline function get_hostname(): Null<String> {
+		var headers = this.header.get('host');
 		if (headers.length > 0) 
 			return (headers[0]: String).split(':')[0];
 		return null;
 	}
 	
 	public var ip(get, never): String;
-	inline function get_ip(): String return request.clientIp;
+	inline function get_ip(): String 
+		return this.clientIp;
 	
 	public var query(get, never): Map<String, String>;
-	function get_query(): Map<String, String> 
+	inline function get_query(): Map<String, String> 
 		return url.query.toMap();
 		
-	public function get(name: String): Null<String> {
-		var found = request.header.get(name);
+	public inline function get(name: String): Null<String> {
+		var found = this.header.get(name);
 		return found.length > 0 ? found[0] : null;
 	}
 	
-	public var cookies: Map<String, String> = new Map();
-	
-	public function new(request: IncomingRequest) {
-		this.request = request;
-		this.url = request.header.uri;
-		path = url.path;
-		for(header in request.header.get('set-cookie')) {
+	public inline function cookies(): Map<String, String> {
+		var cookies = new Map();
+		for(header in this.header.get('set-cookie')) {
 			var line = (header: String).split(';')[0].split('=');
 			cookies.set(StringTools.urlDecode(line[0]), (line.length > 1 ? StringTools.urlDecode(line[1]) : null));
 		}
+		return cookies;
 	}
 	
-	public function next()
-		done.trigger(Noise);
-		
-	public function toString() return Std.string({
-		method: method, url: url, path: path,
-		ip: ip, hostname: hostname, query: query,
-		params: params
-	});
+	public var path(get, never): String;
+	inline function get_path(): String
+		return Std.is(this, MatchedRequest) ? (cast this).path : this.header.uri.path;
+	
+}
+
+class MatchedRequest<T> extends IncomingRequest {
+	
+	public var params(default, null): T;
+	public var path(default, null): String;
+	
+	public function new(req: IncomingRequest, params: T, path: String) {
+		super(req.clientIp, req.header, req.body);
+		this.params = params;
+		this.path = path;
+	}
+	
 }
 
 @:genericBuild(monsoon.macro.RequestBuilder.buildGeneric())

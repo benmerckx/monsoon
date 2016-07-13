@@ -11,7 +11,10 @@
   "dependencies": {
     "tink_url": "",
     "tink_http": "",
+    "tink_macro": "",
+	"tink_await": "",
     "asys": "",
-    "mime": ""
+    "mime": "",
+	"path2ereg": ""
   }
 }

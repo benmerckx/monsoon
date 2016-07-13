@@ -24,6 +24,27 @@ typedef CookieOptions = {
 	?secure: Bool,
 }
 
+typedef FutureResponse = Future<OutgoingResponse>;
+
+abstract Response(FutureResponse) from FutureResponse to FutureResponse {
+	
+	@:from 
+	static function ofResponse(o: OutgoingResponse): Response
+		return Future.sync(o);
+	
+	@:from 
+	static function text(s: String): Response
+		return ofResponse(s);
+		
+	public function status(code: Int) {
+		return this.map(function(res: OutgoingResponse) {
+			@:privateAccess
+			res.header.statusCode = code;
+			return res;
+		});
+	}
+}
+/*
 @:keep
 class Response {
 	
@@ -155,3 +176,4 @@ class Response {
 		);
 		
 }
+*/

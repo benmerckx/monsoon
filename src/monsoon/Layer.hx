@@ -1,32 +1,29 @@
 package monsoon;
 
-import tink.http.Handler;
+import tink.http.Request;
 import tink.http.Response;
-import tink.http.containers.*;
+import tink.http.Handler;
+import tink.core.Future;
+import haxe.Constraints.Function;
 
-using tink.CoreApi;
+typedef LayerBase = IncomingRequest -> HandlerFunction -> Future<OutgoingResponse>;
 
-typedef Collection = Array<IncomingRequest -> Handler -> Future<OutgoingResponse>>;
-
-abstract Layer(Collection) {
-	public inline function new()
-		this = [];
+@:callable
+abstract Layer(LayerBase) from LayerBase to Function {
+	
+	inline function new(func) 
+		this = func;
+	
+	@:from
+	public inline static function fromMiddleware(middleware: Handler -> Handler)
+		return new Layer(function(req, next)
+			return middleware(function(req)
+				return next(req)
+			).process(req)
+		);
+	
+	@:from
+	public inline static function fromHandler(func: Handler)
+		return new Layer(function(req, next) return func.process(req));
+		
 }
-
-/*
-@:forward
-abstract Layer(Handler) from Handler to Handler {
-		
-	//@:op(A + B)
-	public inline function add(layer: Layer): Layer {
-		var prev = this;
-		return this = function (req)
-			return prev.process(req).flatMap(function (res) return 
-				if (res.header.statusCode != 404)
-					Future.sync(res)
-				else
-					layer.process(req)
-			);
-	}
-		
-}*/

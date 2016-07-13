@@ -1,3 +1,4 @@
 -cp ./tests/
 -lib buddy
 -main RunTests
+-dce full

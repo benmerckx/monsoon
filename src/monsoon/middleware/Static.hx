@@ -1,16 +1,19 @@
 package monsoon.middleware;
 
-import monsoon.Method;
-import monsoon.Router;
 import asys.FileSystem;
 import haxe.io.Path;
+import monsoon.Request;
+import tink.http.Handler;
+import tink.http.Method;
+import tink.http.Response.OutgoingResponse;
 
-using Monsoon;
+using tink.CoreApi;
 
 typedef StaticOptions = {
 	index: Array<String>
 }
 
+@await
 class Static {
 	
 	var directory: String;
@@ -20,49 +23,38 @@ class Static {
 	
 	private function new(directory: String, ?options: StaticOptions) {
 		this.directory = directory;
-		Monsoon.concatOptions(this.options, options);
+		if (options != null) 
+			this.options = options;
 	}
 	
-	public function process(request: Request, response: Response) {
-		var path = Path.join([directory, request.path]);
-		if (path == '') path = '.';
-		if (request.method != Method.Get) {
-			request.next();
-			return;
-		}
-		FileSystem.exists(path).handle(function(exists) {
-			if (!exists) {
-				request.next();
-			} else {
-				FileSystem.isDirectory(path).handle(function(isDir) {
-					if (isDir) {
-						var index = options.index;
-						function tryNext() {
-							if (index.length == 0) {
-								request.next();
-								return;
-							}
-							var file = index.shift();
-							var location = Path.join([path, file]);
-							FileSystem.exists(location).handle(function(exists) {
-								if (exists) {
-									response.sendFile(location);
-								} else {
-									tryNext();
-								}
-							});
-						}
-						tryNext();
-					} else {
-						response.sendFile(path);
+	@await
+	public function process(handler: Handler): Handler {
+		return @await function(req: Request) {
+			return Future.async(@await function (done: OutgoingResponse -> Void) {
+				function next()
+					handler.process(req).handle(done);
+					
+				var path = FileSystem.absolutePath(directory+req.path);
+				
+				if (req.method != GET || !@await FileSystem.exists(path))
+					return next();
+					
+				if (@await FileSystem.isDirectory(path)) {
+					for (file in options.index) {
+						var location = Path.join([path, file]);
+						if (@await FileSystem.exists(location))
+							return done('index file');
 					}
-				});
-			}
-		});
+					return next();
+				}
+					
+				return done(path);
+			});
+		}
 	}
 	
 	public static function serve(directory: String, ?options: StaticOptions) {
-		return new Static(directory, options);
+		return new Static(directory, options).process;
 	}
 	
 }
