@@ -5,6 +5,7 @@ import haxe.Json;
 import tink.http.Method;
 import TestTools.*;
 import TestTools.TinkResponse;
+import haxe.DynamicAccess;
 
 using Monsoon;
 using buddy.Should;
@@ -48,8 +49,8 @@ class TestRouter extends BuddySuite {
 			it('should parse bool param');
 			
 			it('should parse splat', function(done) {
-				app.get('/splat/*splat', function(req: Request<{splat: String}>, res: Response) 
-					res.json({splat: req.params.splat})
+				app.get('/splat/*', function(req: Request<DynamicAccess<String>>, res: Response) 
+					res.json({splat: req.params.get('0')})
 				);
 				app.serve(request('/splat/more/than/one/dir')).handle(function(res: TinkResponse) {
 					res.body.should.be(Json.stringify({splat: 'more/than/one/dir'}));

@@ -12,30 +12,9 @@ import monsoon.Request;
 import monsoon.Response;
 import monsoon.Layer;
 import path2ereg.Path2EReg;
-import haxe.Constraints;
 
 using Lambda;
 using tink.CoreApi;
-
-@:callable
-abstract RouteCallback(Function) {
-	
-	inline function new(func) 
-		this = func;
-	
-	@:from
-	public inline static function fromMiddleware(middleware: Handler -> Handler)
-		return new RouteCallback((middleware: Layer));
-		
-	@:from
-	public inline static function fromAnyShort<Req>(func: Req -> Future<OutgoingResponse>)
-		return new RouteCallback(function(req, next) return func(req));
-		
-	@:from
-	public inline static function fromAny<Req>(func: Req -> HandlerFunction -> Future<OutgoingResponse>)
-		return new RouteCallback(func);
-	
-}
 
 @:forward
 abstract Monsoon(List<Layer>) from List<Layer> {
@@ -48,39 +27,50 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 		return this;
 	}
 		
-	public inline function get<T: Function>(path: String, callback: RouteCallback)
+	public inline function get(?path: String, callback: Layer)
 		return route(GET, path, callback);
 	
-	public inline function post<T: Function>(path: String, callback: RouteCallback)
+	public inline function post(?path: String, callback: Layer)
 		return route(POST, path, callback);
 	
-	public function route(?method: Method, ?path: String, callback: RouteCallback, end = true)
-		return add(function(req, next) {
+	public function route(?method: Method, ?path: String, callback: Layer, end = true)
+		return add(function(req, res, next) {
 			return 
 				if (path != null) {
 					var matcher = Path2EReg.toEReg(path, {end: end});
 					if (!matcher.ereg.match(req.header.uri.path)) {
-						next(req);
+						next();
 					} else {
 						var params: DynamicAccess<String> = {};
 						for (i in 0 ... matcher.keys.length)
 							params.set(matcher.keys[i].name, matcher.ereg.matched(i+1));
-						var request = new MatchedRequest(req, params, end ? req.header.uri.path : matcher.ereg.matchedRight());
-						callback(request, next);
+						req.params = cast params;
+						req.path = end ? req.header.uri.path : matcher.ereg.matchedRight();
+						callback(req, res, next);
 					}
 				} else {
-					callback(req, next);
+					req.params = null;
+					req.path = req.path == null ? req.header.uri.path : req.path;
+					callback(req, res, next);
 				}
 		});
 	
-	public inline function use(?path: String, callback: RouteCallback)
+	public inline function use(?path: String, callback: Layer)
 		return route(path, callback, false);
+		
+	public function serve(req: IncomingRequest)
+		return toHandler().process(req);
 	
-	public inline function toHandler(last: Handler): Handler
+	public inline function toHandler(): Handler
+		return toLayer(function (req, res)
+			res.status(404).send('Not found')
+		);
+	
+	public inline function toLayer(last: Layer): Layer
 		return this.fold(
-			function(curr, prev): Handler
-				return function (req)
-					return curr(req, prev), 
+			function(curr: Layer, prev: Layer): Layer
+				return function (req: Request<Any>, res: Response, next)
+					return curr(req, res, (prev: LayerBase).bind(req, res, next)), 
 			last
 		);
 	
@@ -98,9 +88,6 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 			#else
 				#error
 			#end
-		).run(toHandler(
-			function (req)
-				return Future.sync(('404 not found': OutgoingResponse))
-		));
+		).run(toHandler());
 
 }

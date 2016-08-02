@@ -18,7 +18,7 @@ class TestRequest extends BuddySuite {
         describe('Request', {
             it('should contain the http method', function(done) {
 				app.route('/http-method/:method', function(req: Request<{method: String}>, res: Response) {
-					req.method.should.be(req.params.method);
+					req.method.should.be(req.params.method.toUpperCase());
 					res.end();
 				});
 				

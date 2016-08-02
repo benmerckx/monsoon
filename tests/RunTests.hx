@@ -4,12 +4,12 @@ import buddy.*;
 
 @colors
 class RunTests implements Buddy<[
-	TestLayer/*,
+	
 	TestRequest,
 	TestResponse,
 	TestRouter,
-	TestMiddleware,
-	TestRouteController,
+	//TestMiddleware,
+	//TestRouteController,
 	TestStatic,
-	TestCompression*/
+	TestCompression
 ]> {}

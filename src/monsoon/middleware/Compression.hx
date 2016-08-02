@@ -1,6 +1,5 @@
 package monsoon.middleware;
 
-import monsoon.Router;
 import haxe.io.BytesOutput;
 import haxe.io.Bytes;
 import tink.io.IdealSource;
@@ -44,17 +43,17 @@ class Compression {
 	function finalizeResponse(response: Response, bytes: Bytes) {
 		response.set('content-encoding', 'gzip');
 		response.set('content-length', Std.string(bytes.length));
-		@:privateAccess response.output = bytes;
+		@:privateAccess response.body = bytes;
 	}
 	
-	public function process(request: Request, response: Response) {
+	public function process(request: Request, response: Response, next: Void -> Void) {
 		var accept = request.get('accept-encoding');
 		if (accept == null || accept.indexOf('gzip') == -1)
-			return request.next();
+			return next();
 			
-		response.after.push(function() {
+		response.after(function(res) {
 			var trigger = Future.trigger();
-			var out = @:privateAccess response.output;
+			var out = @:privateAccess response.body;
 			var buffer = new BytesOutput();
 			var input: Bytes;
 			out.pipeTo(Sink.ofOutput('response output buffer', buffer))
@@ -68,7 +67,7 @@ class Compression {
 								return;
 							}
 							finalizeResponse(response, buffer.hxToBytes());
-							trigger.trigger(Noise);
+							trigger.trigger(res);
 						});
 					#else
 						var buffer = new BytesBuffer();
@@ -86,13 +85,13 @@ class Compression {
 						buffer.addInt32(input.length);
 						var bytes = buffer.getBytes();
 						finalizeResponse(response, bytes);
-						trigger.trigger(Noise);
+						trigger.trigger(res);
 					#end
 				default:
 			});
 			return trigger.asFuture();
 		});
-		request.next();
+		next();
 	}
 	
 }

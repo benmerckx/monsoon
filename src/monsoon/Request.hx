@@ -7,11 +7,15 @@ import tink.http.Method;
 using tink.CoreApi;
 
 @:forward
-abstract RequestHelper<T: IncomingRequest>(T) from T to T {
+@:allow(monsoon.Monsoon)
+class MonsoonRequest<T> extends IncomingRequest {
 	
-	public inline function new(req)
-		this = req;
-		
+	public function new(req: IncomingRequest)
+		super(req.clientIp, req.header, req.body);
+	
+	public var params(default, null): T;
+	public var path(default, null): String;
+			
 	public var url(get, never): Url;
 	inline function get_url(): Url 
 		return this.header.uri;
@@ -41,30 +45,14 @@ abstract RequestHelper<T: IncomingRequest>(T) from T to T {
 		return found.length > 0 ? found[0] : null;
 	}
 	
-	public inline function cookies(): Map<String, String> {
+	public var cookies(get, never): Map<String, String>;
+	function get_cookies(): Map<String, String> {
 		var cookies = new Map();
 		for(header in this.header.get('set-cookie')) {
 			var line = (header: String).split(';')[0].split('=');
 			cookies.set(StringTools.urlDecode(line[0]), (line.length > 1 ? StringTools.urlDecode(line[1]) : null));
 		}
 		return cookies;
-	}
-	
-	public var path(get, never): String;
-	inline function get_path(): String
-		return Std.is(this, MatchedRequest) ? (cast this).path : this.header.uri.path;
-	
-}
-
-class MatchedRequest<T> extends IncomingRequest {
-	
-	public var params(default, null): T;
-	public var path(default, null): String;
-	
-	public function new(req: IncomingRequest, params: T, path: String) {
-		super(req.clientIp, req.header, req.body);
-		this.params = params;
-		this.path = path;
 	}
 	
 }

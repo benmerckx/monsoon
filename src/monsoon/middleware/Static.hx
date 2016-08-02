@@ -3,8 +3,10 @@ package monsoon.middleware;
 import asys.FileSystem;
 import haxe.io.Path;
 import monsoon.Request;
+import monsoon.Response;
 import tink.http.Handler;
 import tink.http.Method;
+import tink.http.Request.IncomingRequest;
 import tink.http.Response.OutgoingResponse;
 
 using tink.CoreApi;
@@ -28,33 +30,31 @@ class Static {
 	}
 	
 	@await
-	public function process(handler: Handler): Handler {
-		return @await function(req: Request) {
-			return Future.async(@await function (done: OutgoingResponse -> Void) {
-				function next()
-					handler.process(req).handle(done);
-					
-				var path = FileSystem.absolutePath(directory+req.path);
-				
-				if (req.method != GET || !@await FileSystem.exists(path))
-					return next();
-					
-				if (@await FileSystem.isDirectory(path)) {
-					for (file in options.index) {
-						var location = Path.join([path, file]);
-						if (@await FileSystem.exists(location))
-							return done('index file');
-					}
-					return next();
-				}
-					
-				return done(path);
-			});
+	public function process(req: Request, res: Response, next: Void -> Void) {
+		var path = FileSystem.absolutePath(directory+req.path);
+		
+		if (req.method != GET) {
+			next(); return;
 		}
+			
+		if (!@await FileSystem.exists(path)) {
+			next(); return;
+		}
+					
+		if (@await FileSystem.isDirectory(path)) {
+			for (file in options.index) {
+				var location = Path.join([path, file]);
+				if (@await FileSystem.exists(location))
+					return res.sendFile(location);
+			}
+			next(); return;
+		}
+			
+		return res.sendFile(path);
 	}
 	
 	public static function serve(directory: String, ?options: StaticOptions) {
-		return new Static(directory, options).process;
+		return new Static(directory, options);
 	}
 	
 }

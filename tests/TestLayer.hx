@@ -20,32 +20,21 @@ class TestLayer extends BuddySuite {
 	public function new() {		
         var app = new Monsoon();
 		
-		/*var mw = function(handler: Handler) {
-			return function (req) {
-				trace('mw');
-				return handler.process(req);
-			}
-		}
+		app.use(Static.serve('.'));
 		
-		app.use(mw);
-		
-		app.use('/blog', mw);
-		
-		app.use(Static.serve('.'));*/
-		
-		app.use('/:foo', function(req: IncomingRequest, next): Response {
-			return 'abc';
+		app.use('/:foo', function(req, res, next) {
+			res.status(600);
+			next();
 		});
-		app.route('/', function(req: Request, next): Response {
-			return 'index';
+		app.route('/:a', function(req, res, next) {
+			trace(res.header.statusCode);
+			res.send('index');
 		});
 		
 		
 		
 		app
-		.toHandler(function (req: Request) {
-			return Future.sync(('404': OutgoingResponse));
-		})
+		.toHandler()
 		.process(new IncomingRequest('localhost', new IncomingRequestHeader(GET, '/haxelib.json', '1.1', []), IncomingRequestBody.Plain('')))
 		.handle(function(res) {
 			res.body.all().handle(function(b) {

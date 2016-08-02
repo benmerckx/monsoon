@@ -10,16 +10,11 @@ class RequestBuilder {
 		switch (Context.getLocalType()) {
 			case TInst(cl, params):
 				if (params.length == 0)
-					return (macro: monsoon.Request.RequestHelper<tink.http.Request.IncomingRequest>);
+					return (macro: monsoon.Request.MonsoonRequest<tink.core.Any>);
 				if (params.length == 1)
 					return ComplexType.TPath({
-						sub: 'RequestHelper',
-						params: [TPType(ComplexType.TPath({
-							sub: 'MatchedRequest',
-							params: [TPType(TypeTools.toComplexType(Context.follow(params[0])))],
-							pack: ['monsoon'],
-							name: 'Request'
-						}))],
+						sub: 'MonsoonRequest',
+						params: [TPType(TypeTools.toComplexType(Context.follow(params[0])))],
 						pack: ['monsoon'],
 						name: 'Request'
 					});
