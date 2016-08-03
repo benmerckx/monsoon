@@ -15,7 +15,6 @@ typedef StaticOptions = {
 	index: Array<String>
 }
 
-@await
 class Static {
 	
 	var directory: String;
@@ -29,28 +28,28 @@ class Static {
 			this.options = options;
 	}
 	
-	@await
 	public function process(req: Request, res: Response, next: Void -> Void) {
 		var path = FileSystem.absolutePath(directory+req.path);
 		
-		if (req.method != GET) {
-			next(); return;
-		}
+		if (req.method != GET)
+			return next();
 			
-		if (!@await FileSystem.exists(path)) {
-			next(); return;
-		}
-					
-		if (@await FileSystem.isDirectory(path)) {
-			for (file in options.index) {
-				var location = Path.join([path, file]);
-				if (@await FileSystem.exists(location))
-					return res.sendFile(location);
-			}
-			next(); return;
-		}
-			
-		return res.sendFile(path);
+		FileSystem.exists(path).handle(function(exists) {
+			if (!exists) return next();
+			FileSystem.isDirectory(path).handle(function(isDir) {
+				if (!isDir) return res.sendFile(path);
+				var iter = options.index.iterator();
+				function tryNext() {
+					if (!iter.hasNext()) return next();
+					var location = Path.join([path, iter.next()]);
+					FileSystem.exists(location).handle(function(isFile) {
+						if (!isFile) return tryNext();
+						res.sendFile(location);
+					});
+				}
+				tryNext();
+			});
+		});
 	}
 	
 	public static function serve(directory: String, ?options: StaticOptions) {
