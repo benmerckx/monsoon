@@ -65,6 +65,15 @@ class TestRouter extends BuddySuite {
 				});
 			});
 			
+			it('should handle a lot of routes', function(done) {
+				for (i in 0 ... 100001)
+					app.get('/'+i, function(req, res) res.send('ok'));
+				app.serve(request('/100000')).handle(function(res: TinkResponse) {
+					res.body.should.be('ok');
+					done();
+				});
+			});
+			
 			it('should respond a server error if something goes wrong', function(done) {
 				app.get('/fail', function(req: Request, res: Response) 
 					throw 'fail'

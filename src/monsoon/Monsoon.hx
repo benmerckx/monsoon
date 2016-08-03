@@ -58,8 +58,15 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 	public inline function use(?path: String, callback: Layer)
 		return route(path, callback, false);
 		
-	public function serve(req: IncomingRequest)
-		return toHandler().process(req);
+	public function serve(req: IncomingRequest) {
+		return 
+			try toHandler().process(req)
+			catch (e: Dynamic) {
+				var res = new Response();
+				res.error('Unexpected exception: $e');
+				res.future;
+			}
+	}
 	
 	public inline function toHandler(): Handler
 		return toLayer(function (req, res)
@@ -68,8 +75,8 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 	
 	public inline function toLayer(last: Layer): Layer
 		return this.fold(
-			function(curr: Layer, prev: Layer): Layer
-				return function (req: Request<Any>, res: Response, next)
+			function(curr, prev)
+				return function (req, res, next)
 					return curr(req, res, (prev: LayerBase).bind(req, res, next)), 
 			last
 		);
@@ -88,6 +95,6 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 			#else
 				#error
 			#end
-		).run(toHandler());
+	).run(serve);
 
 }

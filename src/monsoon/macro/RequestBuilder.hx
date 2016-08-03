@@ -13,10 +13,10 @@ class RequestBuilder {
 					return (macro: monsoon.Request.MonsoonRequest<tink.core.Any>);
 				if (params.length == 1)
 					return ComplexType.TPath({
-						sub: 'MonsoonRequest',
-						params: [TPType(TypeTools.toComplexType(Context.follow(params[0])))],
 						pack: ['monsoon'],
-						name: 'Request'
+						name: 'Request',
+						sub: 'MonsoonRequest',
+						params: [TPType(TypeTools.toComplexType(Context.follow(params[0])))]
 					});
 				if (params.length > 1)
 					Context.error("Too many type parameters, expected 0 or 1", Context.currentPos());

@@ -6,7 +6,6 @@ import tink.http.Method;
 
 using tink.CoreApi;
 
-@:forward
 @:allow(monsoon.Monsoon)
 class MonsoonRequest<T> extends IncomingRequest {
 	
