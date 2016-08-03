@@ -22,19 +22,29 @@ abstract Layer(LayerBase) from LayerBase to LayerBase {
 	inline function new(func)
 		this = func;
 	
-	/*@:from
+	@:from
 	public inline static function fromMiddleware(middleware: Handler -> Handler)
 		return new Layer(
 			function(req, res, next)
-				return middleware(function(req) {
+				middleware(function(req) {
 					next();
-					return res.future();
-				}).process(req)
+					return res.future;
+				})
+				.process(req)
+				.handle(function(outgoing)
+					@:privateAccess
+					res.ofOutgoingResponse(outgoing).end()
+				)
 		);
-	
+		
 	@:from
 	public inline static function fromHandler(func: Handler)
-		return new Layer(function(req, next) return func.process(req));*/
+		return new Layer(function(req, res, next)
+			func.process(req).handle(function(outgoing)
+				@:privateAccess
+				res.ofOutgoingResponse(outgoing).end()
+			)
+		);
 	
 	@:from
 	public inline static function fromCreateRoutes(cr: WithCreateRoutes) {

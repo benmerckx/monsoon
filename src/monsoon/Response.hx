@@ -139,6 +139,12 @@ class Response {
 		}
 	}
 	
+	function ofOutgoingResponse(res: OutgoingResponse) {
+		header = res.header;
+		body = res.body;
+		return this;
+	}
+	
 	function toOutgoingResponse()
 		return new OutgoingResponse(header, body);
 	
