@@ -38,9 +38,9 @@ class TestMiddleware extends BuddySuite {
         });
 	}
 	
-	function setTestHeader(req: Request, res: Response) {
+	function setTestHeader(req: Request, res: Response, next) {
 		res.set('test', 'ok');
-		req.next();
+		next();
 	}
 	
 }

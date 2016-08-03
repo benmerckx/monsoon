@@ -5,7 +5,6 @@ import tink.http.Container;
 import tink.http.containers.*;
 import tink.http.Request;
 import tink.http.Response;
-import tink.core.Future;
 import tink.http.Handler;
 import tink.http.Method;
 import monsoon.Request;
@@ -22,8 +21,8 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 	public inline function new()
 		this = new List();
 		
-	inline function add(layer: Layer): Monsoon {
-		this.push(layer);
+	public inline function add(layer: Layer): Monsoon {
+		this.add(layer);
 		return this;
 	}
 		
@@ -38,7 +37,7 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 			return 
 				if (path != null) {
 					var matcher = Path2EReg.toEReg(path, {end: end});
-					if (!matcher.ereg.match(req.header.uri.path)) {
+					if (!matcher.ereg.match(req.path)) {
 						next();
 					} else {
 						var params: DynamicAccess<String> = {};
@@ -68,18 +67,29 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 			}
 	}
 	
-	public inline function toHandler(): Handler
-		return toLayer(function (req, res)
-			res.status(404).send('Not found')
-		);
+	public function layer(req, res, last) {
+		var iter = this.iterator();
+		function next()
+			if (iter.hasNext())
+				iter.next()(req, res, next)
+			else
+				last();
+		next();
+	}
 	
-	public inline function toLayer(last: Layer): Layer
-		return this.fold(
-			function(curr, prev)
-				return function (req, res, next)
-					return curr(req, res, (prev: LayerBase).bind(req, res, next)), 
-			last
-		);
+	@:to
+	public inline function toLayer(): Layer
+		return layer;
+		
+	@:to
+	public inline function toHandler(): Handler
+		return toLayer();
+	
+	/*@:from
+	public inline static function fromMap(map: Map<String, Layer>) {
+		for (path in map.keys())
+			route(path, map.get(key));
+	}*/
 	
 	// todo: add options (watch, notfound, etc)
 	public inline function listen(port: Int = 80): Future<ContainerResult>
@@ -95,6 +105,6 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 			#else
 				#error
 			#end
-	).run(serve);
+		).run(serve);
 
 }

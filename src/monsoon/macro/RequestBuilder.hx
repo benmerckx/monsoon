@@ -5,7 +5,8 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 import haxe.macro.TypeTools;
 
-class RequestBuilder {	
+class RequestBuilder {
+	
 	static public function buildGeneric() {
 		switch (Context.getLocalType()) {
 			case TInst(cl, params):
@@ -19,10 +20,11 @@ class RequestBuilder {
 						params: [TPType(TypeTools.toComplexType(Context.follow(params[0])))]
 					});
 				if (params.length > 1)
-					Context.error("Too many type parameters, expected 0 or 1", Context.currentPos());
+					Context.error('Too many type parameters, expected 0 or 1', Context.currentPos());
 			default:
-				Context.error("Type expected", Context.currentPos());
+				Context.error('Type expected', Context.currentPos());
 		}
 		return null;
 	}
+	
 }

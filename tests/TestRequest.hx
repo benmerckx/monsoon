@@ -26,7 +26,7 @@ class TestRequest extends BuddySuite {
 					[GET, HEAD, OPTIONS, POST, PUT, PATCH, DELETE].map(function (m)
 						return app.serve(request(m, '/http-method/'+(m: String).toLowerCase()))
 					)
-				).handle(function(_) done());
+				).handle(done);
 			});
 			
 			it('should parse query parameters', function(done) {
@@ -36,7 +36,7 @@ class TestRequest extends BuddySuite {
 					res.end();
 				});
 				
-				app.serve(request('/parse-query?a=1&b=2')).handle(function(_) done());
+				app.serve(request('/parse-query?a=1&b=2')).handle(done);
 			});
 			
 			it('should parse cookies', function(done) {
@@ -45,10 +45,19 @@ class TestRequest extends BuddySuite {
 					req.cookies.get('name').should.be(value);
 					res.end();
 				});
-				app.serve(request('/cookies', ['set-cookie' => 'name='+StringTools.urlEncode(value)])).handle(function(_) done());
+				app.serve(request('/cookies', ['set-cookie' => 'name='+StringTools.urlEncode(value)])).handle(done);
 			});
 			
-			it('should parse multiple cookies');
+			it('should set cookies', function(done) {
+				var value = 'testvalue#é_$<>Ϸ';
+				app.route('/cookies-set', function(req: Request, res: Response) {
+					res.cookie('name', value).end();
+				});
+				app.serve(request('/cookies-set')).handle(function(res: TinkResponse) {
+					res.header.byName('set-cookie').should.equal(Success('name=testvalue%23%C3%A9_%24%3C%3E%CF%B7; HttpOnly'));
+					done();
+				});
+			});
 			
 			it('should get client headers', function(done) {
 				app.route('/client-headers', function(req: Request, res: Response) {
@@ -56,7 +65,7 @@ class TestRequest extends BuddySuite {
 					req.get('unknown').should.be(null);
 					res.end();
 				});
-				app.serve(request('/client-headers', ['x-test-header' => 'ok'])).handle(function(_) done());
+				app.serve(request('/client-headers', ['x-test-header' => 'ok'])).handle(done);
 			});
 			
         });

@@ -23,6 +23,17 @@ class TestRouter extends BuddySuite {
 				});
 			});
 			
+			it('should add layers in map notation', function(done) {
+				app.get([
+					'/route1' => function(req: Request, res: Response, next) res.send('1'),
+					'/route2' => function(req: Request, res: Response, next) res.send('2')
+				]);
+				app.serve(request('/route2')).handle(function(res: TinkResponse) {
+					res.body.should.be('2');
+					done();
+				});
+			});
+			
 			it('should parse params', function(done) {
 				app.get('/param/:arg', function(req: Request<{arg: String}>, res: Response) 
 					res.json({param: req.params.arg})
@@ -33,7 +44,7 @@ class TestRouter extends BuddySuite {
 				});
 			});
 			
-			it('should parse params of different types', function(done) {
+			/*it('should parse params of different types', function(done) {
 				app.get('/arg/:arg', function(req: Request<{arg: Int}>, res: Response) res.send('Int: '+req.params.arg));
 				app.get('/arg/:arg', function(req: Request<{arg: Float}>, res: Response) res.send('Float: '+req.params.arg));
 				
@@ -44,9 +55,7 @@ class TestRouter extends BuddySuite {
 						done();
 					});
 				});
-			});
-			
-			it('should parse bool param');
+			});*/
 			
 			it('should parse splat', function(done) {
 				app.get('/splat/*', function(req: Request<DynamicAccess<String>>, res: Response) 
@@ -61,15 +70,6 @@ class TestRouter extends BuddySuite {
 			it('should respond with 404 if a page is not found', function(done) {
 				app.serve(request('/unknown')).handle(function(res: TinkResponse) {
 					res.status.should.be(404);
-					done();
-				});
-			});
-			
-			it('should handle a lot of routes', function(done) {
-				for (i in 0 ... 100001)
-					app.get('/'+i, function(req, res) res.send('ok'));
-				app.serve(request('/100000')).handle(function(res: TinkResponse) {
-					res.body.should.be('ok');
 					done();
 				});
 			});

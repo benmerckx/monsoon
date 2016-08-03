@@ -9,8 +9,10 @@ using tink.CoreApi;
 @:allow(monsoon.Monsoon)
 class MonsoonRequest<T> extends IncomingRequest {
 	
-	public function new(req: IncomingRequest)
+	public function new(req: IncomingRequest) {
 		super(req.clientIp, req.header, req.body);
+		path = header.uri.path;
+	}
 	
 	public var params(default, null): T;
 	public var path(default, null): String;

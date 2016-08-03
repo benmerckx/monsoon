@@ -32,23 +32,14 @@ class TestRouteController extends BuddySuite {
 				});
 			});
 			
-			it('app.use should accept multiple prefixes', function(done) {
-				var app = new Monsoon();
-				app.use('/prefix', this);
-				app.serve(request('/prefix/double')).handle(function(res: TinkResponse) {
-					res.body.should.be('ok');
-					done();
-				});
-			});
-			
 			it('app.use should change the request path', function(done) {
 				var app = new Monsoon();
 				app.use('/prefix', function(req: Request, res: Response) {
-					req.path.should.be('abc');
+					req.path.should.be('/abc');
 					res.end();
 				});
 				app.use(function(req: Request, res: Response) {
-					req.path.should.be('abc');
+					req.path.should.be('/abc');
 					res.end();
 				});
 				Future.ofMany([
@@ -59,11 +50,8 @@ class TestRouteController extends BuddySuite {
         });
 	}
 	
-	public function createRoutes(router: Router) {
-		router.route([
-			'/' => function(req, res) res.send('ok')
-		]);
-		router.use('/double', this);
+	public function createRoutes(router: Monsoon) {
+		router.route('/', function(req, res) res.send('ok'));
 	}
 	
 }
