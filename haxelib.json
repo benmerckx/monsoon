@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.1.1",
-  "releasenote": "Update gzip compression",
+  "version": "0.3.0",
+  "releasenote": "New release",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
@@ -14,6 +14,7 @@
     "tink_macro": "",
     "asys": "",
     "mime": "",
-	"path2ereg": ""
+	"path2ereg": "",
+	"http-status": ""
   }
 }

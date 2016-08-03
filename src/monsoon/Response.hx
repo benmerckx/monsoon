@@ -9,6 +9,7 @@ import tink.http.Header.HeaderField;
 import tink.io.IdealSource;
 import asys.io.File;
 import mime.Mime;
+import httpstatus.HttpStatusMessage;
 
 using tink.CoreApi;
 
@@ -34,6 +35,8 @@ class Response {
 	public function status(code: Int) {
 		@:privateAccess
 		header.statusCode = code;
+		@:privateAccess
+		header.reason = (code: HttpStatusMessage);
 		return this;
 	}
 	
