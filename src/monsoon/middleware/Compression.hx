@@ -82,7 +82,7 @@ class Compression {
 						compressed = haxe.io.Bytes.ofString(c);
 						#end
 						// Remove zlib header/checksum
-						buffer.addBytes(compressed, 2, compressed.length-4);
+						buffer.addBytes(compressed, 2, compressed.length-6);
 						buffer.addInt32(Crc32.make(input));
 						buffer.addInt32(input.length);
 						var bytes = buffer.getBytes();
