@@ -4,6 +4,7 @@ import haxe.io.BytesOutput;
 import haxe.io.Bytes;
 import tink.io.IdealSource;
 import tink.io.Sink;
+import tink.io.Worker;
 #if nodejs
 import js.node.Buffer;
 import js.node.Zlib;
@@ -15,6 +16,7 @@ import haxe.crypto.Crc32;
 using Monsoon;
 using tink.CoreApi;
 
+@:access(monsoon.Response)
 class Compression {
 	
 	var level: Int = 9;
@@ -34,7 +36,6 @@ class Compression {
 		buffer.addByte(0);
 		buffer.addByte(0);
 		buffer.addByte(0);
-		// todo: fill this out proper
 		buffer.addByte(level == 9 ? 2 : 4);
 		buffer.addByte(0x03);
 	}
@@ -43,27 +44,28 @@ class Compression {
 	function finalizeResponse(response: Response, bytes: Bytes) {
 		response.set('content-encoding', 'gzip');
 		response.set('content-length', Std.string(bytes.length));
-		@:privateAccess response.body = bytes;
+		response.body = bytes;
 	}
 	
 	public function process(request: Request, response: Response, next: Void -> Void) {
 		var accept = request.get('accept-encoding');
-		if (accept == null || accept.indexOf('gzip') == -1)
-			return next();
+		if (accept == null || accept.indexOf('gzip') == -1) {
+			next(); return;
+		}
 			
 		response.after(function(res) {
 			var trigger = Future.trigger();
 			var out = @:privateAccess response.body;
 			var buffer = new BytesOutput();
 			var input: Bytes;
-			out.pipeTo(Sink.ofOutput('response output buffer', buffer))
+			out.pipeTo(Sink.ofOutput('response output buffer', buffer, Worker.EAGER))
 			.handle(function (x) switch x {
 				case AllWritten:
-					input = buffer.getBytes();					
+					input = buffer.getBytes();	
 					#if nodejs
 						Zlib.gzip(Buffer.hxFromBytes(input), {level: level}, function(err, buffer) {
 							if (err != null) {
-								response.error(500, err.message);
+								response.error(err.message);
 								return;
 							}
 							finalizeResponse(response, buffer.hxToBytes());
@@ -88,6 +90,8 @@ class Compression {
 						trigger.trigger(res);
 					#end
 				default:
+					trace('shit');
+					trigger.trigger(res);
 			});
 			return trigger.asFuture();
 		});

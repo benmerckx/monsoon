@@ -11,25 +11,22 @@ typedef Log = Pair<Dynamic, PosInfos>;
 @:access(monsoon.Response)
 class Console {
 	
-	var logs: Array<Log> = [];
-	var defaultTrace: Dynamic -> PosInfos -> Void;
+	static var logs: Array<Log> = [];
+	
+	public function new() {
+		haxe.Log.trace = 
+			function(v: Dynamic, ?info: PosInfos) 
+				logs.push(new Log(v, info));
+	}
 
-	public function new(router: Router) {
-		defaultTrace = haxe.Log.trace; // todo: this doesn't work
-		haxe.Log.trace = function(v: Dynamic, ?info: PosInfos) logs.push(new Log(v, info));
-		router.route(function(request: Request, response: Response) {
-			response.after.unshift(function() {
-				// Only print logs if this an html response
-				var type = response.get('content-type');
-				if (type == null || type.indexOf('text/html') == -1) {
-					logs.map(function(log) defaultTrace(log.a, log.b));
-					return;
-				}
-				response.output.append('\n<script>'+logs.map(logLine).join('')+'</script>');
-				return Future.sync(Noise);
-			});
-			request.next();
+	public function process(req: Request, res: Response, next) {
+		res.after(function(res) {
+			var type = req.get('content-type');
+			if (type != null && type.indexOf('text/html') > -1)
+				res.body.append('\n<script>'+logs.map(logLine).join('')+'</script>');
+			return Future.sync(res);
 		});
+		next();
 	}
 	
 	function logLine(log: Log) {

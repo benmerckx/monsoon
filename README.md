@@ -21,6 +21,8 @@ class Main {
 
 # Setup
 
+Choose a target and lib of one of the implementations below.
+
 ### Default
 
 Monsoon runs on platforms that provide their own http implementation.  
@@ -41,7 +43,7 @@ haxelib install monsoon-embed
 
 ### Usage
 
-It is recommended to import the Monsoon classes with `using Monsoon;` at the top of your module. All routing methods are implemented as macros and will not properly function without `using`.
+You can import all relevant classes with `using Monsoon;`.
 
 # Routing
 
@@ -63,16 +65,10 @@ app.route('/', function (req, res)
 );
 ```
 
-Multiple routes can be passed at once by using map notation:
-
-```haxe
-app.get([
-	'/' => function (req, res) res.send('Index'),
-    '/page' => function (req, res) res.send('Page')
-]);
-```
-
 ### Matching
+
+Matching is done using [a port](https://github.com/benmerckx/path2ereg) of [path-to-regex](https://github.com/pillarjs/path-to-regexp).
+You can refer to the [express docs](https://expressjs.com/en/guide/routing.html#route-paths) on routing and test the rules with [Express Route Tester](http://forbeslindesay.github.io/express-route-tester/).
 
 #### Parameters
 
@@ -80,24 +76,6 @@ A segment of the path can be matched by using a `:param`. To use the parameter l
 ```haxe
 app.get('/blog/:item', function(req: Request<{item: String}>, res)
 	res.send('Blog item: '+req.params.item)
-);
-```
-
-A parameter can be typed as `String`, `Int`, `Float` or `Bool`. The value will be parsed from the request's path, and the route is passed in case the type does not match. The following example will respond to `/blog/675`, but not to `/blog/string`.
-
-```haxe
-app.get('/blog/:id', function(req: Request<{id: Int}>, res)
-	res.send('Blog item id: '+req.params.id)
-);
-```
-
-#### Splat
-
-Parameters using `:` will match anything seperated by slashes. You can match more by using an asterisk. The following example will match `/blog/a` and `/blog/a/b`. The param can remain unnamed if you don't intend on using it later (eg. `/blog/*`).
-
-```haxe
-app.get('/blog/*splat', function(req: Request<{splat: String}>, res)
-	res.send('Splat: '+req.params.splat)
 );
 ```
 
@@ -143,44 +121,6 @@ app.use(new Console());
 
 ![Console](https://github.com/benmerckx/monsoon/blob/master/docs/console.png?raw=true "")
 
-### Writing your own
-
-Middleware is defined as one of these forms:
-```haxe
-typedef RouteController = {function createRoutes(router : Router) : Void;}
-typedef Middleware = {function process(request: Request, response: Response): Void;}
-```
-
-The router argument can be used the route any request (it defines the same http methods for routing).
-
-Middleware can be used to create controllers. A very simple example:
-
-```haxe
-class Blog {
-	public function createRoutes(router: Router) {
-    	router.get([
-        	'/' => index,
-            '/:item' => detail
-        ]);
-    }
-    
-    function index(request: Request, response: Response)
-    	response.send('List blog items');
-        
-    function detail(request: Request<{item: String}>, response: Response)
-    	response.send('Print blog detail');
-}
-
-// Somewhere else:
-
-app.use([
-	'/blog' => new Blog()
-]);
-
-// This will serve /blog as index and /blog/item-title as detail
-```
-
-
 # Request
 
 ```haxe
@@ -188,10 +128,10 @@ class Request<T> {
 	// Any parameters that were requested in the callback
 	var params: T;
     // Full url (eg. /page?query=1)
-	var url: String;
+	var url: Url;
     // Path only, stripped of query (eg. /page)
 	var path: String;
-    // The http request method (see monsoon.Method)
+    // The http request method
 	var method: Method;
 	// The request body, plain or parsed (see tink.http)
 	var body: IncomingRequestBody;
@@ -206,10 +146,6 @@ class Request<T> {
 
 	// Returns the specified HTTP request header field
 	function get(key: String): Null<String>;
-	// Use in a callback/middleware to pass this request to the next route
-	function next();
-    // Returns a printable representation of the request
-	function toString();
 }
 ```
 
@@ -240,15 +176,6 @@ class Response {
 	// End the response with the file's contents, content-type will be set automatically but can be set explicitly
 	function sendFile(path: String, ?contentType: String)
 }
-```
-
-
-# App options
-
-Following options can be supplied when creating a new `Monsoon` instance:
- - `threads`: Int - amount of threads to use for the embedded webserver
- - `watch`: Bool - currently only supported on neko, exits the webserver when the .n file changes ([see also](https://github.com/back2dos/foxhole/#watch-mode))
-
-	 
+```	 
 
 License: MIT

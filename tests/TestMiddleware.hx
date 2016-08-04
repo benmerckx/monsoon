@@ -5,6 +5,7 @@ import haxe.Json;
 import tink.http.Method;
 import TestTools.*;
 import TestTools.TinkResponse;
+import monsoon.middleware.Console;
 
 using Monsoon;
 using buddy.Should;

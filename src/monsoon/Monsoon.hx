@@ -31,9 +31,24 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 	
 	public inline function post(?path: String, callback: Layer)
 		return route(POST, path, callback);
+		
+	public inline function delete(?path: String, callback: Layer)
+		return route(DELETE, path, callback);
+		
+	public inline function head(?path: String, callback: Layer)
+		return route(HEAD, path, callback);
+		
+	public inline function options(?path: String, callback: Layer)
+		return route(OPTIONS, path, callback);
+		
+	public inline function patch(?path: String, callback: Layer)
+		return route(PATCH, path, callback);
+		
+	public inline function put(?path: String, callback: Layer)
+		return route(PUT, path, callback);
 	
 	public function route(?method: Method, ?path: String, callback: Layer, end = true)
-		return add(function(req, res, next) {
+		return add(function(req: Request, res: Response, next: Void -> Void) {
 			return 
 				if (path != null) {
 					var matcher = Path2EReg.toEReg(path, {end: end});
@@ -44,12 +59,12 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 						for (i in 0 ... matcher.keys.length)
 							params.set(matcher.keys[i].name, matcher.ereg.matched(i+1));
 						req.params = cast params;
-						req.path = end ? req.header.uri.path : matcher.ereg.matchedRight();
+						req.path = end ? req.path : matcher.ereg.matchedRight();
 						callback(req, res, next);
 					}
 				} else {
 					req.params = null;
-					req.path = req.path == null ? req.header.uri.path : req.path;
+					req.path = req.path == null ? req.url.path : req.path;
 					callback(req, res, next);
 				}
 		});
@@ -95,7 +110,10 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 	public inline function listen(port: Int = 80): Future<ContainerResult>
 		return (
 			#if embed
-				new TcpContainer(port)
+				{
+					this.push(monsoon.middleware.ThreadServer.serve(24));
+					new TcpContainer(port);
+				}
 			#elseif php
 				PhpContainer.inst
 			#elseif neko

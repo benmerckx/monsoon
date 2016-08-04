@@ -30,20 +30,32 @@ class Static {
 	
 	public function process(req: Request, res: Response, next: Void -> Void) {
 		var path = FileSystem.absolutePath(directory+req.path);
-		
-		if (req.method != GET)
-			return next();
+
+		if (req.method != GET) {
+			next(); return;
+		}
 			
 		FileSystem.exists(path).handle(function(exists) {
-			if (!exists) return next();
+			if (!exists) {
+				next(); return;
+			}
 			FileSystem.isDirectory(path).handle(function(isDir) {
-				if (!isDir) return res.sendFile(path);
+				if (!isDir) {
+					res.sendFile(path);
+					return;
+				}
 				var iter = options.index.iterator();
 				function tryNext() {
-					if (!iter.hasNext()) return next();
+					if (!iter.hasNext()) {
+						next();
+						return;
+					}
 					var location = Path.join([path, iter.next()]);
 					FileSystem.exists(location).handle(function(isFile) {
-						if (!isFile) return tryNext();
+						if (!isFile) {
+							tryNext();
+							return;
+						}
 						res.sendFile(location);
 					});
 				}

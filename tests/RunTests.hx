@@ -4,7 +4,6 @@ import buddy.*;
 
 @colors
 class RunTests implements Buddy<[
-	
 	TestRequest,
 	TestResponse,
 	TestRouter,
