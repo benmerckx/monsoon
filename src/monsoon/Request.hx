@@ -13,7 +13,9 @@ class MonsoonRequest<T> extends IncomingRequest {
 		super(req.clientIp, req.header, req.body);
 		path = header.uri.path;
 		url = header.uri;
-		query = url.query.toMap();
+		var query = url.query.toMap();
+		for (key in query.keys())
+			query.set(key, query.get(key));
 		method = header.method;
 		for(header in header.get('set-cookie')) {
 			var line = (header: String).split(';')[0].split('=');
@@ -40,7 +42,7 @@ class MonsoonRequest<T> extends IncomingRequest {
 	inline function get_ip(): String 
 		return this.clientIp;
 	
-	public var query(default, null): Map<String, String>;
+	public var query(default, null): Map<String, String> = new Map();
 		
 	public function get(name: String): Null<String> {
 		var found = this.header.get(name);
