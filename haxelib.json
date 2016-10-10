@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.3.0",
-  "releasenote": "New release",
+  "version": "0.3.1",
+  "releasenote": "Cast query values to String",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
