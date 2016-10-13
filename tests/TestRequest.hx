@@ -16,7 +16,10 @@ class TestRequest extends BuddySuite {
     public function new() {
 		var app = new Monsoon();
         describe('Request', {
-            it('should contain the http method', function(done) {
+            it('should contain the http method');
+            // Todo: renable after this gets fixed:
+            // https://github.com/HaxeFoundation/haxe/issues/5706
+            /*it('should contain the http method', function(done) {
 				app.route('/http-method/:method', function(req: Request<{method: String}>, res: Response) {
 					req.method.should.be(req.params.method.toUpperCase());
 					res.end();
@@ -27,7 +30,7 @@ class TestRequest extends BuddySuite {
 						return app.serve(request(m, '/http-method/'+(m: String).toLowerCase()))
 					)
 				).handle(done);
-			});
+			});*/
 			
 			it('should parse query parameters', function(done) {
 				app.route('/parse-query', function(req: Request, res: Response) {
