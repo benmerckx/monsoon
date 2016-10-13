@@ -100,20 +100,10 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 	public inline function toHandler(): Handler
 		return toLayer();
 	
-	/*@:from
-	public inline static function fromMap(map: Map<String, Layer>) {
-		for (path in map.keys())
-			route(path, map.get(key));
-	}*/
-	
-	// todo: add options (watch, notfound, etc)
-	public inline function listen(port: Int = 80): Future<ContainerResult>
+	inline function container(port)
 		return (
 			#if embed
-				{
-					this.push(monsoon.middleware.ThreadServer.serve(24));
-					new TcpContainer(port);
-				}
+				new TcpContainer(port)
 			#elseif php
 				PhpContainer.inst
 			#elseif neko
@@ -123,6 +113,26 @@ abstract Monsoon(List<Layer>) from List<Layer> {
 			#else
 				#error
 			#end
-		).run(serve);
+		);
+		
+	// Todo: add options (watch, notfound, etc)
+	public inline function listen(port: Int = 80): Future<ContainerResult> {
+		var container = container(port);
+		
+		#if (embed && haxe_ver < 3.300)
+		
+		// Work around for https://github.com/haxetink/tink_runloop/issues/4
+		var trigger = Future.trigger();
+		@:privateAccess tink.RunLoop.create(function()
+			container.run(serve).handle(trigger.trigger)
+		);
+		return trigger.asFuture();
+		
+		#else
+		
+		return container.run(serve);
+		
+		#end
+	}
 
 }

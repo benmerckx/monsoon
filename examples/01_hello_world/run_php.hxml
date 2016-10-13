@@ -1,0 +1,4 @@
+-lib monsoon
+-main Server
+-php bin/php
+-cmd php -S 0.0.0.0:3000 bin/php/index.php

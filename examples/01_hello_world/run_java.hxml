@@ -1,0 +1,5 @@
+-lib monsoon-embed
+-lib hxjava
+-main Server
+-java bin/java/
+-cmd java -jar bin/java/Server.jar

@@ -1,4 +1,0 @@
--lib monsoon-embed
--main Server
--neko server.n
--cmd neko server.n

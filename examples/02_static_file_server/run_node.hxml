@@ -1,0 +1,5 @@
+-lib monsoon
+-lib hxnodejs
+-main Server
+-js bin/node/server.js
+-cmd node bin/node/server.js

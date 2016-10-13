@@ -1,0 +1,5 @@
+-lib monsoon-embed
+-main Server
+-cpp bin/cpp
+-dce full
+-D static

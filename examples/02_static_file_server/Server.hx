@@ -8,8 +8,6 @@ class Server {
     var app = new Monsoon();
     app.use(Static.serve('public'));
     app.listen(port);
-    #if sys
-    Sys.println('Server ready and listening on http://localhost:${port}');
-    #end
+    trace('Server ready and listening on http://localhost:${port}');
   }
 }
