@@ -8,6 +8,7 @@ import tink.http.Response;
 import tink.http.Header.HeaderField;
 import tink.io.IdealSource;
 import asys.io.File;
+import asys.FileSystem;
 import mime.Mime;
 import httpstatus.HttpStatusMessage;
 
@@ -101,26 +102,33 @@ class Response {
 	}
 	
 	function finalize() {
-		transform(this).handle(function(res) {
-			done.trigger(res.toOutgoingResponse());
-		});
+		transform(this).handle(function(res)
+			done.trigger(res.toOutgoingResponse())
+		);
 	}
 	
 	public function sendFile(path: String, ?contentType: String) {
-		if (contentType == null) {
-			var type = Mime.lookup(path);
-			if (type == null) 
-				type = 'application/octet-stream';
-			var info = Mime.db.get(type);
-			contentType = type;
-			if (info.charset != null)
-				contentType += '; charset='+info.charset.toLowerCase();
-		}
-		set('content-type', contentType);
-		body = File.readStream(path).idealize(function(e)
-			error('Could not read file: '+path)
-		);
-		finalize();
+		function fail(_)
+			error('Could not read file: '+path);
+		
+        FileSystem.stat(path).handle(function (res) switch res {
+			case Success(stat):
+				if (contentType == null) {
+					var type = Mime.lookup(path);
+					if (type == null) 
+						type = 'application/octet-stream';
+					var info = Mime.db.get(type);
+					contentType = type;
+					if (info.charset != null)
+						contentType += '; charset='+info.charset.toLowerCase();
+				}
+				set('content-type', contentType);
+				set('content-length', '${stat.size}');
+				body = File.readStream(path).idealize(fail);
+				finalize();
+			default:
+				fail(null);
+		});
 	}
 	
 	public static function fromOutgoingResponse(res: OutgoingResponse) {

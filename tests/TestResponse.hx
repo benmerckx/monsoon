@@ -5,6 +5,7 @@ import haxe.Json;
 import tink.http.Method;
 import TestTools.*;
 import TestTools.TinkResponse;
+import asys.FileSystem;
 
 using Monsoon;
 using buddy.Should;
@@ -60,6 +61,21 @@ class TestResponse extends BuddySuite {
 					res.status.should.be(500);
 					res.body.should.be('failed');
 					done();
+				});
+			});
+			
+			it('should serve files with content-type and content-length', function(done) {
+				var file = 'haxelib.json';
+				FileSystem.stat(file).handle(function (res) switch res {
+					case Success(stat):
+						app.get('/file', function(req, res: Response) res.sendFile('haxelib.json'));
+						app.serve(request('/file')).handle(function(res: TinkResponse) {
+							res.header.byName('content-type').should.equal(Success('application/json; charset=utf-8'));
+							res.header.byName('content-length').should.equal(Success('${stat.size}'));
+							done();
+						});
+					default:
+						fail('Could not read haxelib.json');
 				});
 			});
         });
