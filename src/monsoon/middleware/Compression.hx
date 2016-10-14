@@ -2,6 +2,7 @@ package monsoon.middleware;
 
 import haxe.io.BytesOutput;
 import haxe.io.Bytes;
+import mime.Mime;
 import tink.io.IdealSource;
 import tink.io.Sink;
 import tink.io.Worker;
@@ -49,15 +50,27 @@ class Compression {
 	
 	public function process(request: Request, response: Response, next: Void -> Void) {
 		var accept = request.get('accept-encoding');
+		
 		if (accept == null || accept.indexOf('gzip') == -1) {
 			next(); return;
 		}
 			
 		response.after(function(res) {
+			// Only compress types for which it makes sense
+			var type = res.get('content-type');
+			if (type == null) 
+				return Future.sync(res);
+			var mime = Mime.db.get(type);
+			if (mime == null) 
+				return Future.sync(res);
+			if (mime.compressible == null || !mime.compressible)
+				return Future.sync(res);
+			
 			var trigger = Future.trigger();
-			var out = @:privateAccess response.body;
+			var out = response.body;
 			var buffer = new BytesOutput();
 			var input: Bytes;
+			
 			out.pipeTo(Sink.ofOutput('response output buffer', buffer, Worker.EAGER))
 			.handle(function (x) switch x {
 				case AllWritten:
@@ -90,11 +103,11 @@ class Compression {
 						trigger.trigger(res);
 					#end
 				default:
-					trace('shit');
 					trigger.trigger(res);
 			});
 			return trigger.asFuture();
 		});
+		
 		next();
 	}
 	
