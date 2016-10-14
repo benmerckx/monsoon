@@ -3,7 +3,9 @@ package monsoon.middleware;
 import httpstatus.HttpStatusMessage;
 import tink.io.Buffer;
 import tink.io.Source;
+import tink.io.IdealSink.BlackHole;
 import haxe.io.Bytes;
+import tink.io.StreamParser;
 
 using tink.CoreApi;
 
@@ -77,8 +79,10 @@ class ByteRange {
 						return fail();
 					
 					var body: Source = res.body;
-					if (range.start > 0)
-						body.read(Buffer.alloc(range.start), range.start);
+					if (range.start > 0) {
+						var limited = body.limit(range.start);
+						limited.pipeTo(BlackHole.INST);
+					}
 							
 					@:privateAccess
 					res.body = body.limit(range.length).idealize(fail);
@@ -86,7 +90,7 @@ class ByteRange {
 					res
 					.status(206)
 					.set('content-length', '${range.length}')
-					.set('content-range', '${range.start}-${range.start+range.length-1}/${length}');
+					.set('content-range', 'bytes ${range.start}-${range.start+range.length-1}/${length}');
 					
 					return done();
 				default:

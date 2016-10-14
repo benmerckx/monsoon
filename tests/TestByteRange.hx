@@ -34,7 +34,7 @@ class TestByteRange extends BuddySuite {
 				app.serve(request('/', ['range' => 'bytes=0-3'])).handle(function(res: TinkResponse) {
 					res.status.should.be(206);
 					res.header.byName('content-length').should.equal(Success('4'));
-					res.header.byName('content-range').should.equal(Success('0-3/10'));
+					res.header.byName('content-range').should.equal(Success('bytes 0-3/10'));
 					res.body.should.be('0123');
 					done();
 				});
@@ -44,7 +44,7 @@ class TestByteRange extends BuddySuite {
 				app.serve(request('/', ['range' => 'bytes=1-4'])).handle(function(res: TinkResponse) {
 					res.status.should.be(206);
 					res.header.byName('content-length').should.equal(Success('4'));
-					res.header.byName('content-range').should.equal(Success('1-4/10'));
+					res.header.byName('content-range').should.equal(Success('bytes 1-4/10'));
 					res.body.should.be('1234');
 					done();
 				});
@@ -54,7 +54,7 @@ class TestByteRange extends BuddySuite {
 				app.serve(request('/', ['range' => 'bytes=8-'])).handle(function(res: TinkResponse) {
 					res.status.should.be(206);
 					res.header.byName('content-length').should.equal(Success('2'));
-					res.header.byName('content-range').should.equal(Success('8-9/10'));
+					res.header.byName('content-range').should.equal(Success('bytes 8-9/10'));
 					res.body.should.be('89');
 					done();
 				});
@@ -64,7 +64,7 @@ class TestByteRange extends BuddySuite {
 				app.serve(request('/', ['range' => 'bytes=-2'])).handle(function(res: TinkResponse) {
 					res.status.should.be(206);
 					res.header.byName('content-length').should.equal(Success('2'));
-					res.header.byName('content-range').should.equal(Success('8-9/10'));
+					res.header.byName('content-range').should.equal(Success('bytes 8-9/10'));
 					res.body.should.be('89');
 					done();
 				});
