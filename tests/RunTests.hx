@@ -10,6 +10,7 @@ class RunTests implements Buddy<[
 	TestMiddleware,
 	TestRouteController,
 	TestStatic,
+	TestByteRange,
 	TestCompression
 ]> {
 	#if php

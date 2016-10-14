@@ -12,7 +12,7 @@ class TestTools {
 	public static function request(?method: Method, path: String, ?fields: TinkHeaderFields, body = '')
 	return new IncomingRequest('127.0.0.1', 
 		new IncomingRequestHeader(method == null ? GET : method, path, '1.1', fields == null ? [] : fields), 
-	IncomingRequestBody.Plain(body)
+		IncomingRequestBody.Plain(body)
 	);
 	
 }
