@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.3.2",
-  "releasenote": "Work around for runloop issues",
+  "version": "0.4.0",
+  "releasenote": "ByteRange middleware",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
