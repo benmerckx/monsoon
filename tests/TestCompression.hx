@@ -20,10 +20,10 @@ class TestCompression extends BuddySuite {
 		
         describe('Compression middleware', {
             it('should compress via gzip', function(done) {
-				app.use(new Compression());
-				app.get(function(req: Request, res: Response) {
-					res.send('ok');
-				});
+				app.use(Compression.serve());
+				app.get(function(req: Request, res: Response)
+					res.html('ok')
+				);
 				app.serve(request('/', ['accept-encoding' => 'gzip'])).handle(function(res: TinkResponse) {
 					res.header.byName('content-encoding').should.equal(Success('gzip'));
 					done();

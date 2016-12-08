@@ -91,7 +91,7 @@ Compresses the result of your response using gzip, if accepted by the client.
 Takes one optional argument: `?level: Int`, the compression level of 0-9.
 
 ```haxe
-app.use(new Compression());
+app.use(Compression.serve());
 ```
 
 #### Static
@@ -114,7 +114,18 @@ app.use('/assets', Static.serve('public'));
 Supports client requests for ranged responses.
 	
 ```haxe
-app.use(ByteRange.serve);
+app.use(ByteRange.serve());
+```
+
+#### Basic Authentication
+
+Request basic authentication. Pass a function which validates the username and password given by the user.
+It expects a [`Promise<Bool>`](https://github.com/haxetink/tink_core/blob/master/src/tink/core/Promise.hx) (returning `Bool` will automatically be cast to a `Promise`).
+	
+```haxe
+app.use(BasicAuth.serve(function (user, password) 
+	return user = 'monsoon' && password = 'mypassword'
+));
 ```
 
 #### Console
@@ -124,7 +135,7 @@ Middleware can used for all matching requests in the current router by passing t
 
 
 ```haxe
-app.use(new Console());
+app.use(Console.serve());
 ```
 
 ![Console](https://github.com/benmerckx/monsoon/blob/master/docs/console.png?raw=true "")
@@ -181,6 +192,8 @@ class Response {
 	function end();
 	// End the response with given output
 	function send(output: String);
+	// Set content-type to text/html;charset=utf-8 and end the response
+	function html(output: String);
 	// End the response with the file's contents, content-type will be set automatically but can be set explicitly
 	function sendFile(path: String, ?contentType: String)
 }

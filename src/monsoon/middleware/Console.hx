@@ -33,4 +33,7 @@ class Console {
 		return 'console.log("%c '+log.b.fileName+':'+log.b.lineNumber+' ", "background: #222; color: white", '+Json.stringify(log.a)+');';
 	}
 	
+	public static function serve()
+		return new Console().process;
+	
 }

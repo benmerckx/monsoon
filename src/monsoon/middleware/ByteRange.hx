@@ -50,57 +50,58 @@ class ByteRange {
 		return Success(response);
 	}
 
-	public static function serve(req: Request, res: Response, next: Void -> Void) {
-		function done()
-			return Future.sync(res);
-			
-		function fail() {
-			res.error(416, HttpStatusMessage.fromCode(416));
-			return Future.sync(res);
-		}
-			
-		res.after(function (res) {
-			if (res.get('content-length') == null) 
-				return done();
-			
-			var length = Std.parseInt(res.get('content-length'));
-			res.set('accept-ranges', 'bytes');
-			
-			var header = req.get('range');
-			if (header == null)
-				return done();
+	public static function serve()
+		return function(req: Request, res: Response, next: Void -> Void) {
+			function done()
+				return Future.sync(res);
 				
-			switch parseRange(req.get('range'), length) {
-				case Success(ranges):
-					if (ranges.length != 1)
-						return fail();
-					var range = ranges[0];
-					if (range.start+range.length > length)
-						return fail();
-					
-					var body: Source = res.body;
-					if (range.start > 0) {
-						var limited = body.limit(range.start);
-						limited.pipeTo(BlackHole.INST);
-					}
-							
-					@:privateAccess
-					res.body = body.limit(range.length).idealize(fail);
-					
-					res
-					.status(206)
-					.set('content-length', '${range.length}')
-					.set('content-range', 'bytes ${range.start}-${range.start+range.length-1}/${length}');
-					
-					return done();
-				default:
-					return fail();
+			function fail() {
+				res.error(416, HttpStatusMessage.fromCode(416));
+				return Future.sync(res);
 			}
+				
+			res.after(function (res) {
+				if (res.get('content-length') == null) 
+					return done();
+				
+				var length = Std.parseInt(res.get('content-length'));
+				res.set('accept-ranges', 'bytes');
+				
+				var header = req.get('range');
+				if (header == null)
+					return done();
+					
+				switch parseRange(req.get('range'), length) {
+					case Success(ranges):
+						if (ranges.length != 1)
+							return fail();
+						var range = ranges[0];
+						if (range.start+range.length > length)
+							return fail();
+						
+						var body: Source = res.body;
+						if (range.start > 0) {
+							var limited = body.limit(range.start);
+							limited.pipeTo(BlackHole.INST);
+						}
+								
+						@:privateAccess
+						res.body = body.limit(range.length).idealize(fail);
+						
+						res
+						.status(206)
+						.set('content-length', '${range.length}')
+						.set('content-range', 'bytes ${range.start}-${range.start+range.length-1}/${length}');
+						
+						return done();
+					default:
+						return fail();
+				}
+				
+				return done();
+			});
 			
-			return done();
-		});
-		
-		next();
-	}
+			next();
+		}
 	
 }

@@ -57,7 +57,7 @@ class Compression {
 			
 		response.after(function(res) {
 			// Only compress types for which it makes sense
-			var type = res.get('content-type');
+			var type = res.get('content-type').split(';')[0]; // Todo: use header / contentType for this
 			if (type == null) 
 				return Future.sync(res);
 			var mime = Mime.db.get(type);
@@ -110,5 +110,8 @@ class Compression {
 		
 		next();
 	}
+	
+	public static function serve(?level: Int)
+		return new Compression(level).process;
 	
 }

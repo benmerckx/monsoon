@@ -15,7 +15,7 @@ class MonsoonRequest<T> extends IncomingRequest {
 		url = header.uri;
 		query = cast url.query.toMap();
 		method = header.method;
-		for(header in header.get('set-cookie')) {
+		for (header in header.get('set-cookie')) {
 			var line = (header: String).split(';')[0].split('=');
 			cookies.set(StringTools.urlDecode(line[0]), (line.length > 1 ? StringTools.urlDecode(line[1]) : null));
 		}

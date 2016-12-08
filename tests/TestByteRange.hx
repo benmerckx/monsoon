@@ -17,7 +17,7 @@ class TestByteRange extends BuddySuite {
 	public function new() {
 		var app = new Monsoon();
 		
-		app.use(ByteRange.serve);
+		app.use(ByteRange.serve());
 		app.get('/', function(req, res: Response) 
 			res.set('content-length', '10').send('0123456789')
 		);

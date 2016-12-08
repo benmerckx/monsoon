@@ -95,10 +95,15 @@ class Response {
 	
 	public function end()
 		send(null);
-		
+	
 	public function send(output: String) {
 		body = output;
 		finalize();
+	}
+	
+	public function html(output: String) {
+		set('content-type', 'text/html; charset=utf-8');
+		send(output);
 	}
 	
 	function finalize() {
