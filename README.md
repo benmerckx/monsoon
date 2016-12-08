@@ -130,8 +130,7 @@ app.use(BasicAuth.serve(function (user, password)
 
 #### Console
 
-The Console is a debugging tool which will bundle any traces created during the processing of the request and send them with your response to the browser. They are packaged as a single `<script>` tag and log to the console on the client side.   
-Middleware can used for all matching requests in the current router by passing the Class as you would a callback:
+The Console is a debugging tool which will bundle any traces created during the processing of the request and send them with your response to the browser. They are packaged as a single `<script>` tag and log to the console on the client side.
 
 
 ```haxe
