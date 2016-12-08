@@ -1,0 +1,5 @@
+-lib monsoon-embed
+-lib tink_protocol
+-main Server
+-neko bin/neko/server.n
+-cmd neko bin/neko/server.n
