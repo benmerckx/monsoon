@@ -94,7 +94,7 @@ class Response {
 		}
 	
 	public function end()
-		send(null);
+		finalize();
 	
 	public function send(output: String) {
 		body = output;

@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["js", "html", "web"],
   "description": "Minimal haxe web framework",
-  "version": "0.4.0",
-  "releasenote": "ByteRange middleware",
+  "version": "0.5.0",
+  "releasenote": "Don't change body when ending response",
   "contributors": ["benmerckx"],
   "classPath": "src",
   "dependencies": {
